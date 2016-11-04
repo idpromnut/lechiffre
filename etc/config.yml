@@ -1,0 +1,15 @@
+roleToCommandPermissions:
+  '@everyone':
+  - help
+  'the client':
+  - help
+  - lastseen
+  - logout
+  - save
+  - stats
+  'owner':
+  - help
+  - logout
+  - save
+dataDirectoryPath: .
+statsSavePeriodMinutes: 10
