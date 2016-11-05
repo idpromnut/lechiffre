@@ -21,5 +21,6 @@
 	</root>
 
 	<logger name="org.unrecoverable.lechiffre" level="debug" />
+	<logger name="sx.blah.discord" level="info" />
 
 </configuration>
