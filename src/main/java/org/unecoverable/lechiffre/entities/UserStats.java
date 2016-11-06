@@ -1,5 +1,8 @@
 package org.unecoverable.lechiffre.entities;
 
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.unecoverable.lechiffre.stats.ActivityStatistic;
@@ -23,6 +26,9 @@ public class UserStats {
 
 	@Override
 	public String toString() {
+		final DateTimeFormatter lActiveHourFormatter = new DateTimeFormatterBuilder()
+				.appendPattern("h a")
+				.toFormatter();
 		StringBuilder lBuilder = new StringBuilder();
 		HourlyBinnedStatistic lOnline = presence.getOnline();
 		int lTopHour = 0;
@@ -33,9 +39,12 @@ public class UserStats {
 				lTopHour = i;
 			}
 		}
-		lBuilder.append("presence: ").append(lTopHour).append(",");
-		lBuilder.append("messages: ").append(messagesAuthored.get()).append(",");
-		lBuilder.append("mentions by others: ").append(mentions.get());
+
+		LocalTime lTime = LocalTime.MIDNIGHT.plusHours(lTopHour);
+		LocalTime lEndTime = LocalTime.MIDNIGHT.plusHours(lTopHour + 1);
+		lBuilder.append("most active hour in the day:  **").append(lActiveHourFormatter.format(lTime)).append(" to ").append(lActiveHourFormatter.format(lEndTime)).append("**\n");
+		lBuilder.append("messages sent:                         **").append(messagesAuthored.get()).append("**\n");
+		lBuilder.append("mentions by others:                 **").append(mentions.get()).append("**\n");
 		return lBuilder.toString();
 	}
 }

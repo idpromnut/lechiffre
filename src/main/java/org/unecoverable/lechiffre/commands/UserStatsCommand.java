@@ -6,11 +6,11 @@ import org.unecoverable.lechiffre.entities.User;
 import org.unecoverable.lechiffre.entities.UserStats;
 
 import sx.blah.discord.handle.obj.IMessage;
+import sx.blah.discord.handle.obj.IUser;
 
-public class GetStatsCommand extends BaseStatsCommand implements ICommand {
+public class UserStatsCommand extends BaseStatsCommand implements ICommand {
 
-	public GetStatsCommand() {
-		// TODO Auto-generated constructor stub
+	public UserStatsCommand() {
 	}
 
 	@Override
@@ -20,7 +20,12 @@ public class GetStatsCommand extends BaseStatsCommand implements ICommand {
 
 	@Override
 	public String getHelp() {
-		return "returns stats on either a single user (ex: !stats joe) or the entire server (ex: !stats)";
+		return "returns stats on either a single user (ex: !stats joe) or your stats (ex: !stats)";
+	}
+
+	@Override
+	public boolean isGuildCommand() {
+		return false;
 	}
 
 	@Override
@@ -33,9 +38,9 @@ public class GetStatsCommand extends BaseStatsCommand implements ICommand {
 		if (lChoppedContent.length == 2) {
 			return Pair.of(Boolean.TRUE, getStatsForUser(lChoppedContent[1]));
 		} else {
-			// todo return the stats for the guild of the message author
+			final IUser lAuthor = message.getAuthor();
+			return Pair.of(Boolean.TRUE, getStatsForUser(lAuthor.getName()));
 		}
-		return Pair.of(Boolean.FALSE, null);
 	}
 
 	public String getStatsForUser(String username) {
@@ -44,7 +49,7 @@ public class GetStatsCommand extends BaseStatsCommand implements ICommand {
 		if (lUser != null) {
 			UserStats lStats = findUserStats(lUser);
 			if (lStats != null) {
-				lUserStatsString = lUser.getName() + ": " + lStats.toString();
+				lUserStatsString = "__**" + lUser.getName() + "**__:\n" + lStats.toString() + "\n";
 			}
 		}
 		return lUserStatsString;

@@ -10,6 +10,12 @@ import org.unecoverable.lechiffre.entities.UserStats;
 import lombok.extern.slf4j.Slf4j;
 import sx.blah.discord.handle.obj.IMessage;
 
+/**
+ * This command returns the date+time of the last activity of the queried user. Note that this
+ * will not include PMs sent to other users, but will include PMs sent to the bot.
+ *
+ * @author Chris Matthews
+ */
 @Slf4j
 public class LastSeenCommand extends BaseStatsCommand implements ICommand {
 
@@ -26,6 +32,11 @@ public class LastSeenCommand extends BaseStatsCommand implements ICommand {
 	@Override
 	public String getHelp() {
 		return "returns the last time a user was seen as active on the server (ex: !lastseen moe)";
+	}
+
+	@Override
+	public boolean isGuildCommand() {
+		return false;
 	}
 
 	@Override

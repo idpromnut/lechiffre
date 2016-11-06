@@ -36,10 +36,15 @@ public class LogoutCommand implements ICommand {
 	}
 
 	@Override
+	public boolean isGuildCommand() {
+		return false;
+	}
+
+	@Override
 	public Pair<Boolean, String> handle(IMessage message) {
 
 		final IChannel lChannel = message.getChannel();
-		if (lChannel.isPrivate() && message.getContent().startsWith(Commands.CMD_LOGOUT)) {
+		if (message.getContent().startsWith(Commands.CMD_PREFIX + Commands.CMD_LOGOUT)) {
 			final IDiscordClient lClient = message.getClient();
 			final IUser lAuthor = message.getAuthor();
 			try {

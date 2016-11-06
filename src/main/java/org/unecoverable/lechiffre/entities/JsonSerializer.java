@@ -11,35 +11,36 @@ import java.io.Writer;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.IOUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
-public class JsonSerializer {
+import lombok.extern.slf4j.Slf4j;
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(JsonSerializer.class);
+@Slf4j
+public class JsonSerializer {
 
 	public JsonSerializer() {
 	}
 
-	public void saveStats(final GuildStats guildStats, final String statsFilename) {
+	public void saveStats(final GuildStats guildStats, final File statsFile) {
 
 		ObjectMapper mapper = new ObjectMapper().findAndRegisterModules();
-//		mapper.registerModule(new LeChiffreStatsModule());
 		mapper.enable(SerializationFeature.INDENT_OUTPUT);
 		mapper.enable(SerializationFeature.WRITE_DATES_WITH_ZONE_ID);
 		Writer statsWriter = null;
-		File statsFile = new File(statsFilename);
 		File lTempFile = null;
 		try {
-			lTempFile = File.createTempFile(statsFilename, "tmp", statsFile.getParentFile());
+			lTempFile = new File(statsFile.getAbsolutePath() + ".tmp");
 			statsWriter = new BufferedWriter(new FileWriter(lTempFile));
 			mapper.writeValue(statsWriter, guildStats);
-			lTempFile.renameTo(statsFile);
+			if (!statsFile.delete()) {
+				log.warn("could not delete old save file {}. New stats have been written to {}", statsFile.getAbsolutePath(), lTempFile.getAbsolutePath());
+			}
+			else {
+				lTempFile.renameTo(statsFile);
+			}
 		} catch (IOException e) {
-			LOGGER.error("could not write stats to {}", statsFilename, e);
+			log.error("could not write stats to {}", statsFile, e);
 			if (lTempFile != null) lTempFile.delete();
 		} finally {
 			IOUtils.closeQuietly(statsWriter);
@@ -56,7 +57,7 @@ public class JsonSerializer {
 				statsReader = new BufferedReader(new FileReader(statsFile));
 				guildStats = mapper.readValue(statsReader, GuildStats.class);
 			} catch (IOException e) {
-				LOGGER.error("could not load stats from {}", statsFile, e);
+				log.error("could not load stats from {}", statsFile, e);
 			} finally {
 				IOUtils.closeQuietly(statsReader);
 			}

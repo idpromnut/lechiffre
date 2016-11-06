@@ -1,6 +1,8 @@
+botToken:
 roleToCommandPermissions:
   '@everyone':
   - help
+  - guildstats
   'the client':
   - help
   - lastseen
@@ -11,5 +13,6 @@ roleToCommandPermissions:
   - help
   - logout
   - save
-dataDirectoryPath: .
+  - guildstats
+dataDirectoryPath: ../
 statsSavePeriodMinutes: 10

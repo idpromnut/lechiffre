@@ -25,6 +25,15 @@ import sx.blah.discord.handle.obj.IUser;
 import sx.blah.discord.handle.obj.Presences;
 import sx.blah.discord.modules.IModule;
 
+/**
+ * This statistics module currently tracks the following information:
+ *
+ * - Users:
+ *   - last activity (last message to a public channel, presence/status change)
+ *   -
+ * @author Chris Matthews
+ *
+ */
 public class StatsModule implements IModule {
 	private static final Logger LOGGER = LoggerFactory.getLogger(StatsModule.class);
 

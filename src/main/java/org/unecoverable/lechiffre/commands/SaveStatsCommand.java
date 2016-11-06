@@ -1,9 +1,12 @@
 package org.unecoverable.lechiffre.commands;
 
+import java.io.File;
 import java.util.Map;
 
 import org.apache.commons.lang3.tuple.Pair;
+import org.unecoverable.lechiffre.entities.Configuration;
 import org.unecoverable.lechiffre.entities.GuildStats;
+import org.unecoverable.lechiffre.entities.IConfigurable;
 import org.unecoverable.lechiffre.entities.JsonSerializer;
 
 import lombok.extern.slf4j.Slf4j;
@@ -11,11 +14,17 @@ import sx.blah.discord.handle.obj.IGuild;
 import sx.blah.discord.handle.obj.IMessage;
 
 @Slf4j
-public class SaveStatsCommand extends BaseStatsCommand implements ICommand {
+public class SaveStatsCommand extends BaseStatsCommand implements ICommand, IConfigurable {
 
 	private JsonSerializer serializer = new JsonSerializer();
+	private Configuration configuration = null;
 
 	public SaveStatsCommand() {
+	}
+
+	@Override
+	public void configure(Configuration configuration) {
+		this.configuration = configuration;
 	}
 
 	@Override
@@ -29,13 +38,23 @@ public class SaveStatsCommand extends BaseStatsCommand implements ICommand {
 	}
 
 	@Override
+	public boolean isGuildCommand() {
+		return false;
+	}
+
+	@Override
 	public Pair<Boolean, String> handle(IMessage message) {
-		log.info("Saving stats for all known guilds");
-		for(Map.Entry<IGuild, GuildStats> lEntry: getGuildStatsMap().entrySet()) {
-			serializer.saveStats(lEntry.getValue(), JsonSerializer.escapeStringAsFilename(lEntry.getKey().getName()) + "-stats.json");
-			log.info("Guild stats for {} have been written to disk ({} users)", lEntry.getKey().getName(), lEntry.getValue().getUsers().size());
+		if (configuration != null) {
+			log.info("Saving stats for all known guilds");
+			for(Map.Entry<IGuild, GuildStats> lEntry: getGuildStatsMap().entrySet()) {
+				File lStatsFile = new File(configuration.getDataDirectoryPath(), JsonSerializer.escapeStringAsFilename(lEntry.getKey().getName()) + "-stats.json");
+				serializer.saveStats(lEntry.getValue(), lStatsFile);
+				log.info("Guild stats for {} have been written to {} ({} users)", lEntry.getKey().getName(), lStatsFile.getAbsolutePath(), lEntry.getValue().getUsers().size());
+			}
+		}
+		else {
+			log.warn("no configuration set, cannot save stats");
 		}
 		return Pair.of(Boolean.TRUE, null);
 	}
-
 }

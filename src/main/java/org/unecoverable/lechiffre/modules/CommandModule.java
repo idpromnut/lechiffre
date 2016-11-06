@@ -20,6 +20,14 @@ import sx.blah.discord.handle.obj.IMessage;
 import sx.blah.discord.handle.obj.IUser;
 import sx.blah.discord.modules.IModule;
 
+/**
+ * This module listens for "commands" from users for the bot to process. A command is
+ * a message that starts with a {@link  org.unrecoverable.lechiffre.commands.Commands#CMD_PREFIX  Command prefix}.
+ *
+ *
+ * @author Chris Matthews
+ *
+ */
 @Slf4j
 public class CommandModule implements IModule, IConfigurable {
 
@@ -63,6 +71,11 @@ public class CommandModule implements IModule, IConfigurable {
 	@Override
 	public void configure(Configuration configuration) {
 		this.configuration = configuration;
+		for(ICommand lCommand: commandChain) {
+			if (lCommand instanceof IConfigurable) {
+				((IConfigurable) lCommand).configure(configuration);
+			}
+		}
 	}
 
 	@EventSubscriber
@@ -92,22 +105,25 @@ public class CommandModule implements IModule, IConfigurable {
 		final IUser lAuthor = message.getAuthor();
 		final IGuild lGuild = message.getGuild();
 
-		if (lGuild == null) {
-			return "commands must be requested from a server (not via PM!)";
-		}
-		else if (Commands.isCommand(lContent)) {
+		if (Commands.isCommand(lContent)) {
+
+			// define the "unknown command" response
 			Pair<Boolean, String> lResponse = Pair.of(Boolean.TRUE,
-					"I don't know what you would like me to do, may I suggest you '!help' yourself.");
+					"I don't know what you would like me to do, may I suggest you '" + Commands.CMD_PREFIX + Commands.CMD_HELP + "' yourself.");
+
 			for (ICommand lCommand : commandChain) {
 				if (message.getContent().startsWith(Commands.CMD_PREFIX + lCommand.getCommand())) {
-					if (configuration.userHasPermission(lAuthor, lGuild, lCommand)) {
-						lResponse = lCommand.handle(message);
-						if (lResponse != null)
-							break;
+
+					// check if this command requires that user sent the command from a guild channel
+					if (lCommand.isGuildCommand() ) {
+						lResponse = executeGuildCommand(lCommand, message, lGuild, lAuthor);
 					}
 					else {
-						return "I'm sorry, but I can't let you run the " + Commands.CMD_PREFIX + lCommand.getCommand() + " command";
+						// otherwise this command doesn't require a guild reference to execute
+						// TODO need to add a set of permissions checking based on user ID or something
+						lResponse = lCommand.handle(message);
 					}
+					break;
 				}
 			}
 
@@ -123,4 +139,27 @@ public class CommandModule implements IModule, IConfigurable {
 			return null;
 		}
 	}
+
+	private Pair<Boolean, String> executeGuildCommand(final ICommand command, final IMessage message, final IGuild guild, final IUser author) {
+
+		Pair<Boolean, String> lResponse;
+
+		if (guild == null) {
+			return Pair.of(Boolean.TRUE, command.getCommand() + " must be requested from a channel (not via PM!)");
+		}
+
+		// check if the user that send the command can execute it using the guild permissions it was sent from
+		if (configuration.userHasPermission(author, guild, command)) {
+			lResponse = command.handle(message);
+		}
+		else {
+			lResponse = Pair.of(Boolean.TRUE, "I'm sorry, but I can't let you run the " + Commands.CMD_PREFIX + command.getCommand() + " command");
+		}
+
+		return lResponse;
+	}
+
+//	private Pair<Boolean, String> executeCommand(final ICommand command, final IMessage message, final IUser author) {
+//
+//	}
 }

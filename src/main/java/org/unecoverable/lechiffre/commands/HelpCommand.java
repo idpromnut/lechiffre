@@ -39,6 +39,11 @@ public class HelpCommand implements ICommand, IConfigurable {
 	}
 
 	@Override
+	public boolean isGuildCommand() {
+		return true;
+	}
+
+	@Override
 	public Pair<Boolean, String> handle(IMessage message) {
 		final String[] lChoppedMessage = StringUtils.split(message.getContent(), " ");
 		final IUser lAuthor = message.getAuthor();
@@ -47,19 +52,25 @@ public class HelpCommand implements ICommand, IConfigurable {
 		String lHelpMessage;
 		if (lGuild != null) {
 			if (lChoppedMessage.length == 2) {
-				lHelpMessage = "I don't know anything about a " + lChoppedMessage[1];
+				final String lHelpForCommand = lChoppedMessage[1];
+				lHelpMessage = "I don't know anything about a " + lHelpForCommand;
 				for(ICommand lCommand: commands) {
-					if (lCommand.getCommand().contentEquals(lChoppedMessage[1].toLowerCase())) {
-						lHelpMessage = lCommand.getHelp();
+					if (lCommand.getCommand().contentEquals(lHelpForCommand.toLowerCase())) {
+						if (configuration.userHasPermission(lAuthor, lGuild, lCommand)) {
+							lHelpMessage = getFormattedCommandHelpString(lCommand);
+						}
+						else {
+							lHelpMessage = "you don't have access to that command, scrub-bucket. Go cry in a corner!";
+						}
 						break;
 					}
 				}
 			}
 			else {
-				lHelpMessage = "Commands I know about:\n\n";
+				lHelpMessage = "Commands that you may try:\n\n";
 				for(ICommand lCommand: commands) {
 					if (configuration.userHasPermission(lAuthor, lGuild, lCommand)) {
-						lHelpMessage += "**" + Commands.CMD_PREFIX + lCommand.getCommand() + " -** " + lCommand.getHelp() + "\n";
+						lHelpMessage += getFormattedCommandHelpString(lCommand);
 					}
 				}
 			}
@@ -69,5 +80,13 @@ public class HelpCommand implements ICommand, IConfigurable {
 		}
 
 		return Pair.of(Boolean.TRUE, lHelpMessage);
+	}
+
+	private String getFormattedCommandHelpString(final ICommand command) {
+		return String.format("**%s%s -** %s %s\n",
+				Commands.CMD_PREFIX,
+				command.getCommand(),
+				command.getHelp(),
+				(command.isGuildCommand() ? "(channel command)" : ""));
 	}
 }

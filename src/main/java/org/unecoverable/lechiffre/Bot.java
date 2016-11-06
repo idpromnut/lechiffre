@@ -8,7 +8,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import org.unecoverable.lechiffre.commands.GetStatsCommand;
+import org.apache.commons.lang3.StringUtils;
+import org.unecoverable.lechiffre.commands.UserStatsCommand;
+import org.unecoverable.lechiffre.commands.GuildStatsCommand;
 import org.unecoverable.lechiffre.commands.HelpCommand;
 import org.unecoverable.lechiffre.commands.ICommand;
 import org.unecoverable.lechiffre.commands.IStatsCommand;
@@ -55,10 +57,6 @@ public class Bot {
 		if (!Configuration.AUTOMATICALLY_ENABLE_MODULES || !Configuration.LOAD_EXTERNAL_MODULES)
 			throw new RuntimeException("Invalid configuration!");
 
-		// There needs to be at least 1 argument
-		if (args.length != 1)
-			throw new IllegalArgumentException("At least 1 argument required (discord token)!");
-
 		// load in configuration
 		Reader lConfigReader;
 		Yaml readerYaml = new Yaml(new Constructor(org.unecoverable.lechiffre.entities.Configuration.class));
@@ -72,44 +70,45 @@ public class Bot {
 		}
 
 		// create command list
-		commands.add(new GetStatsCommand());
 		final SaveStatsCommand lSaveStatsCommand = new SaveStatsCommand();
-		commands.add(lSaveStatsCommand);
-		commands.add(new LastSeenCommand());
 		LogoutCommand lLogoutCommand = new LogoutCommand();
 		lLogoutCommand.getPreLogoutCommands().add(lSaveStatsCommand);
+		commands.add(lSaveStatsCommand);
 		commands.add(lLogoutCommand);
+		commands.add(new UserStatsCommand());
+		commands.add(new LastSeenCommand());
+		commands.add(new GuildStatsCommand());
+
+		// create the help command using all the previously defined commands
 		HelpCommand lHelpCommand = new HelpCommand(commands);
 		commands.add(lHelpCommand);
+
 		commandModule.getCommandChain().addAll(commands);
 		commandModule.configure(configuration);
 
 		// set up periodic stats saving thread
-		final Thread lPeriodicSaveStatsWorker = new Thread(new Runnable() {
-			@Override
-			public void run() {
-				while(true) {
-					try {
-						lSaveStatsCommand.handle(null);
-						Thread.sleep(TimeUnit.MILLISECONDS.convert(configuration.getStatsSavePeriodMinutes(), TimeUnit.MINUTES));
-					} catch (InterruptedException e) {
-						// exit
-						log.warn("periodic stats saving thread was interrupted and will not exit");
-						return;
-					} catch (Exception e) {
-						log.warn("could not save stats");
-					}
-				}
-			}
-		});
-		lPeriodicSaveStatsWorker.setName("PeriodicStatsSavingThread");
-		lPeriodicSaveStatsWorker.setDaemon(true);
-		lPeriodicSaveStatsWorker.start();
+		StatsSaveWorker lStatsSaveWorker = new Bot.StatsSaveWorker(configuration);
+		lStatsSaveWorker.start();
 
 
 		try {
+			// try and get token from configuration file
+			String lBotToken = null;
+
+			if (args.length > 0) {
+				lBotToken = args[0];
+			}
+
+			if (StringUtils.isBlank(lBotToken)) {
+				lBotToken = configuration.getBotToken();
+				if (StringUtils.isBlank(lBotToken)) {
+					log.error("No App bot user token found. Set botToken in the config file or provide the token as the first command line parameter");
+					System.exit(1);
+				}
+			}
+
 			ClientBuilder builder = new ClientBuilder();
-			final IDiscordClient client = builder.withToken("MjQxNjkzNjg0NzkyMjk1NDI0.CvVv2w.fRG9mwTjg7GFImE5oEFYKSos6rg").build();
+			final IDiscordClient client = builder.withToken(lBotToken).build();
 
 			// register modules
 			ModuleLoader lModuleLoader = new ModuleLoader(client);
@@ -160,6 +159,41 @@ public class Bot {
 			// The modules should handle the rest
 		} catch (DiscordException e) {
 			log.error("There was an error initializing the client", e);
+		}
+	}
+
+	public static class StatsSaveWorker implements Runnable {
+
+		private org.unecoverable.lechiffre.entities.Configuration configuration;
+		private Thread worker;
+
+		public StatsSaveWorker(org.unecoverable.lechiffre.entities.Configuration configuration) {
+			this.configuration = configuration;
+		}
+
+		public void start() {
+			worker = new Thread(this);
+			worker.setName("PeriodicStatsSavingThread");
+			worker.setDaemon(true);
+			worker.start();
+		}
+
+		@Override
+		public void run() {
+			SaveStatsCommand lSaveStatsCommand = new SaveStatsCommand();
+			lSaveStatsCommand.configure(configuration);
+			while(true) {
+				try {
+					lSaveStatsCommand.handle(null);
+					Thread.sleep(TimeUnit.MILLISECONDS.convert(configuration.getStatsSavePeriodMinutes(), TimeUnit.MINUTES));
+				} catch (InterruptedException e) {
+					// exit
+					log.warn("periodic stats saving thread was interrupted and will not exit");
+					return;
+				} catch (Exception e) {
+					log.warn("could not save stats");
+				}
+			}
 		}
 	}
 }

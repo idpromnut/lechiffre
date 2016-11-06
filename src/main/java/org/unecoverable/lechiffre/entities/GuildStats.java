@@ -3,6 +3,7 @@ package org.unecoverable.lechiffre.entities;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Getter;
 
@@ -23,10 +24,12 @@ public class GuildStats {
 		userStats.put(user.getId(), stats);
 	}
 
+	@JsonIgnore
 	public UserStats getStats(final String userId) {
 		return userStats.get(userId);
 	}
 
+	@JsonIgnore
 	public boolean isTracked(final String userId) {
 		boolean lTracked = false;
 		if (users.containsKey(userId) && userStats.containsKey(userId)) {
@@ -39,5 +42,25 @@ public class GuildStats {
 			userStats.remove(userId);
 		}
 		return lTracked;
+	}
+
+	@JsonIgnore
+	public int totalMessagesPosted() {
+		int lTotalGuildMessagesSent = 0;
+		for(UserStats lStats: getUserStats().values()) {
+			lTotalGuildMessagesSent += lStats.getMessagesAuthored().get();
+		}
+
+		return lTotalGuildMessagesSent;
+	}
+
+	@JsonIgnore
+	public int totalMentions() {
+		int lTotalMentions = 0;
+		for(UserStats lStats: getUserStats().values()) {
+			lTotalMentions += lStats.getMentions().get();
+		}
+
+		return lTotalMentions;
 	}
 }

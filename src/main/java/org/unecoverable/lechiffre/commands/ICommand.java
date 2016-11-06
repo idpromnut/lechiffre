@@ -10,5 +10,7 @@ public interface ICommand {
 
 	String getHelp();
 
+	boolean isGuildCommand();
+
 	Pair<Boolean, String> handle(IMessage message);
 }

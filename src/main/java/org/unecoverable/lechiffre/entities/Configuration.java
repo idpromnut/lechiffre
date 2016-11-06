@@ -20,6 +20,11 @@ import sx.blah.discord.handle.obj.IUser;
 public class Configuration {
 
 	/**
+	 * Bot token that is generated in the Discord App Bot User settings
+	 */
+	private String botToken;
+
+	/**
 	 * Map of roles to lists of commands
 	 */
 	@NonNull
