@@ -41,7 +41,7 @@ public class LogoutCommand implements ICommand {
 	}
 
 	@Override
-	public Pair<Boolean, String> handle(IMessage message) {
+	public Pair<BotReply, String> handle(IMessage message) {
 
 		final IChannel lChannel = message.getChannel();
 		if (message.getContent().startsWith(Commands.CMD_PREFIX + Commands.CMD_LOGOUT)) {
@@ -69,7 +69,7 @@ public class LogoutCommand implements ICommand {
 			System.exit(0);
 		}
 
-		return Pair.of(Boolean.FALSE, null);
+		return Pair.of(BotReply.NONE, null);
 	}
 
 	private void executePreLogoutCommands(IMessage message) {

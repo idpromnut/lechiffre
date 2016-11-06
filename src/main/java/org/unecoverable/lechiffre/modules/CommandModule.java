@@ -2,8 +2,8 @@ package org.unecoverable.lechiffre.modules;
 
 import java.util.LinkedList;
 import java.util.List;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.unecoverable.lechiffre.commands.BotReply;
 import org.unecoverable.lechiffre.commands.Commands;
 import org.unecoverable.lechiffre.commands.ICommand;
 import org.unecoverable.lechiffre.entities.Configuration;
@@ -85,36 +85,46 @@ public class CommandModule implements IModule, IConfigurable {
 			final IUser lAuthor = lMessage.getAuthor();
 			final IDiscordClient lClient = event.getClient();
 			final IChannel lChannel = lMessage.getChannel();
-			IChannel lReplyChannel = lChannel;
-			if (!lChannel.isPrivate()) {
-				lReplyChannel = lClient.getOrCreatePMChannel(lAuthor);
-			}
+			IChannel lPrivateChannel = lClient.getOrCreatePMChannel(lAuthor);
 
-			String lReplyMessage = dispatchCommand(lMessage);
-			if (StringUtils.isNotBlank(lReplyMessage)) {
-				lReplyChannel.sendMessage(lReplyMessage);
+			Pair<BotReply, String> lReply = dispatchCommand(lMessage);
+			if (lReply != null) {
+				switch (lReply.getLeft()) {
+				case CHANNEL:
+					if (configuration.getChannelReplyWhitelist().contains(lChannel.getName())) {
+						lChannel.sendMessage(lReply.getRight());
+						break;
+					}
+				case PM:
+					lPrivateChannel.sendMessage(lReply.getRight());
+					break;
+				case NONE:
+				default:
+					break;
+				}
 			}
 		} catch (Exception e1) {
 			log.warn("error while trying send reply message", e1);
 		}
 	}
 
-	private String dispatchCommand(final IMessage message) {
+	private Pair<BotReply, String> dispatchCommand(final IMessage message) {
 
 		final String lContent = message.getContent();
 		final IUser lAuthor = message.getAuthor();
 		final IGuild lGuild = message.getGuild();
+		Pair<BotReply, String> lResponse = Pair.of(BotReply.NONE, null);
 
 		if (Commands.isCommand(lContent)) {
 
 			// define the "unknown command" response
-			Pair<Boolean, String> lResponse = Pair.of(Boolean.TRUE,
+			lResponse = Pair.of(BotReply.PM,
 					"I don't know what you would like me to do, may I suggest you '" + Commands.CMD_PREFIX + Commands.CMD_HELP + "' yourself.");
 
 			for (ICommand lCommand : commandChain) {
 				if (message.getContent().startsWith(Commands.CMD_PREFIX + lCommand.getCommand())) {
 
-					// check if this command requires that user sent the command from a guild channel
+					// check if this command requires a permissions check (the guild is available)
 					if (lCommand.isGuildCommand() ) {
 						lResponse = executeGuildCommand(lCommand, message, lGuild, lAuthor);
 					}
@@ -126,26 +136,17 @@ public class CommandModule implements IModule, IConfigurable {
 					break;
 				}
 			}
+		}
 
-			// is the response to be returned to the originator of the message?
-			if (lResponse.getLeft() == true) {
-				return lResponse.getRight();
-			} else {
-				return null;
-			}
-		}
-		// otherwise do nothing
-		else {
-			return null;
-		}
+		return lResponse;
 	}
 
-	private Pair<Boolean, String> executeGuildCommand(final ICommand command, final IMessage message, final IGuild guild, final IUser author) {
+	private Pair<BotReply, String> executeGuildCommand(final ICommand command, final IMessage message, final IGuild guild, final IUser author) {
 
-		Pair<Boolean, String> lResponse;
+		Pair<BotReply, String> lResponse;
 
 		if (guild == null) {
-			return Pair.of(Boolean.TRUE, command.getCommand() + " must be requested from a channel (not via PM!)");
+			return Pair.of(BotReply.PM, command.getCommand() + " must be requested from a channel (not via PM!)");
 		}
 
 		// check if the user that send the command can execute it using the guild permissions it was sent from
@@ -153,13 +154,9 @@ public class CommandModule implements IModule, IConfigurable {
 			lResponse = command.handle(message);
 		}
 		else {
-			lResponse = Pair.of(Boolean.TRUE, "I'm sorry, but I can't let you run the " + Commands.CMD_PREFIX + command.getCommand() + " command");
+			lResponse = Pair.of(BotReply.PM, "I'm sorry, but I can't let you run the " + Commands.CMD_PREFIX + command.getCommand() + " command");
 		}
 
 		return lResponse;
 	}
-
-//	private Pair<Boolean, String> executeCommand(final ICommand command, final IMessage message, final IUser author) {
-//
-//	}
 }

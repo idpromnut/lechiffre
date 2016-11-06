@@ -100,9 +100,6 @@
 										setting -->
 									<wrapperMainClass>org.tanukisoftware.wrapper.WrapperSimpleApp</wrapperMainClass>
 									<mainClass>org.unecoverable.lechiffre.Bot</mainClass>
-									<commandLineArguments>
-										<commandLineArgument>start</commandLineArgument>
-									</commandLineArguments>
 									<platforms>
 										<platform>jsw</platform>
 									</platforms>

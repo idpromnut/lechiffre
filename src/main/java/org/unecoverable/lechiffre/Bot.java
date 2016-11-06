@@ -17,6 +17,7 @@ import org.unecoverable.lechiffre.commands.IStatsCommand;
 import org.unecoverable.lechiffre.commands.LastSeenCommand;
 import org.unecoverable.lechiffre.commands.LogoutCommand;
 import org.unecoverable.lechiffre.commands.SaveStatsCommand;
+import org.unecoverable.lechiffre.commands.SelfStatsCommand;
 import org.unecoverable.lechiffre.entities.GuildStats;
 import org.unecoverable.lechiffre.entities.JsonSerializer;
 import org.unecoverable.lechiffre.modules.CommandModule;
@@ -78,6 +79,7 @@ public class Bot {
 		commands.add(new UserStatsCommand());
 		commands.add(new LastSeenCommand());
 		commands.add(new GuildStatsCommand());
+		commands.add(new SelfStatsCommand());
 
 		// create the help command using all the previously defined commands
 		HelpCommand lHelpCommand = new HelpCommand(commands);
@@ -97,6 +99,7 @@ public class Bot {
 
 			if (args.length > 0) {
 				lBotToken = args[0];
+				log.info("Using token configured on command line: {}", lBotToken);
 			}
 
 			if (StringUtils.isBlank(lBotToken)) {
@@ -104,6 +107,9 @@ public class Bot {
 				if (StringUtils.isBlank(lBotToken)) {
 					log.error("No App bot user token found. Set botToken in the config file or provide the token as the first command line parameter");
 					System.exit(1);
+				}
+				else {
+					log.info("Using token configured from config file: {}", lBotToken);
 				}
 			}
 

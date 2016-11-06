@@ -12,5 +12,5 @@ public interface ICommand {
 
 	boolean isGuildCommand();
 
-	Pair<Boolean, String> handle(IMessage message);
+	Pair<BotReply, String> handle(IMessage message);
 }

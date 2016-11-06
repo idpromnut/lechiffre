@@ -6,7 +6,6 @@ import org.unecoverable.lechiffre.entities.User;
 import org.unecoverable.lechiffre.entities.UserStats;
 
 import sx.blah.discord.handle.obj.IMessage;
-import sx.blah.discord.handle.obj.IUser;
 
 public class UserStatsCommand extends BaseStatsCommand implements ICommand {
 
@@ -20,7 +19,7 @@ public class UserStatsCommand extends BaseStatsCommand implements ICommand {
 
 	@Override
 	public String getHelp() {
-		return "returns stats on either a single user (ex: !stats joe) or your stats (ex: !stats)";
+		return "returns stats on a user (ex: !stats joe)";
 	}
 
 	@Override
@@ -29,18 +28,17 @@ public class UserStatsCommand extends BaseStatsCommand implements ICommand {
 	}
 
 	@Override
-	public Pair<Boolean, String> handle(IMessage message) {
+	public Pair<BotReply, String> handle(IMessage message) {
 
 		final String lContent = message.getContent();
 		final String[] lChoppedContent = StringUtils.split(lContent, " ");
 
 		// there is a user name present, return the stats for that user only
 		if (lChoppedContent.length == 2) {
-			return Pair.of(Boolean.TRUE, getStatsForUser(lChoppedContent[1]));
-		} else {
-			final IUser lAuthor = message.getAuthor();
-			return Pair.of(Boolean.TRUE, getStatsForUser(lAuthor.getName()));
+			return Pair.of(BotReply.PM, getStatsForUser(lChoppedContent[1]));
 		}
+
+		return Pair.of(BotReply.NONE, null);
 	}
 
 	public String getStatsForUser(String username) {

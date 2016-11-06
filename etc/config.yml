@@ -16,3 +16,4 @@ roleToCommandPermissions:
   - guildstats
 dataDirectoryPath: ../
 statsSavePeriodMinutes: 10
+channelReplyWhitelist:

@@ -43,7 +43,7 @@ public class SaveStatsCommand extends BaseStatsCommand implements ICommand, ICon
 	}
 
 	@Override
-	public Pair<Boolean, String> handle(IMessage message) {
+	public Pair<BotReply, String> handle(IMessage message) {
 		if (configuration != null) {
 			log.info("Saving stats for all known guilds");
 			for(Map.Entry<IGuild, GuildStats> lEntry: getGuildStatsMap().entrySet()) {
@@ -55,6 +55,6 @@ public class SaveStatsCommand extends BaseStatsCommand implements ICommand, ICon
 		else {
 			log.warn("no configuration set, cannot save stats");
 		}
-		return Pair.of(Boolean.TRUE, null);
+		return Pair.of(BotReply.NONE, null);
 	}
 }

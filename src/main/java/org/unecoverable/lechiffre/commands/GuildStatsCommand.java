@@ -28,7 +28,7 @@ public class GuildStatsCommand extends BaseStatsCommand implements ICommand, ISt
 	}
 
 	@Override
-	public Pair<Boolean, String> handle(final IMessage message) {
+	public Pair<BotReply, String> handle(final IMessage message) {
 
 		final IGuild lGuild = message.getGuild();
 		String lReply = "no guild stats found";
@@ -45,7 +45,7 @@ public class GuildStatsCommand extends BaseStatsCommand implements ICommand, ISt
 			}
 		}
 
-		return Pair.of(Boolean.TRUE, lReply);
+		return Pair.of(BotReply.CHANNEL, lReply);
 	}
 
 	public int getTotalUsers(final IGuild guild) {

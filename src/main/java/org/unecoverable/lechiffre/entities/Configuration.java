@@ -1,5 +1,6 @@
 package org.unecoverable.lechiffre.entities;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,6 +35,9 @@ public class Configuration {
 	private String dataDirectoryPath = ".";
 
 	private int statsSavePeriodMinutes = 10;
+
+	@NonNull
+	private List<String> channelReplyWhitelist = new ArrayList<>();
 
 	public Configuration() {
 

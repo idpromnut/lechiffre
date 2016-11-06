@@ -9,6 +9,8 @@ public final class Commands {
 
 	public static final String CMD_STATS = "stats";
 
+	public static final String CMD_SKILLZ = "skillz";
+
 	public static final String CMD_LOGOUT = "logout";
 
 	public static final String CMD_LAST_SEEN = "lastseen";
@@ -36,6 +38,7 @@ public final class Commands {
 		lCommands.add(CMD_SAVE);
 		lCommands.add(CMD_STATS);
 		lCommands.add(CMD_GUILD_STATS);
+		lCommands.add(CMD_SKILLZ);
 		return lCommands;
 	}
 }

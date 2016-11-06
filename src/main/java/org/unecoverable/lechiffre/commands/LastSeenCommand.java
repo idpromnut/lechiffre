@@ -40,7 +40,7 @@ public class LastSeenCommand extends BaseStatsCommand implements ICommand {
 	}
 
 	@Override
-	public Pair<Boolean, String> handle(IMessage message) {
+	public Pair<BotReply, String> handle(IMessage message) {
 
 		final String lContent = message.getContent();
 		final String[] lChoppedContent = StringUtils.split(lContent, " ");
@@ -57,7 +57,7 @@ public class LastSeenCommand extends BaseStatsCommand implements ICommand {
 				}
 			}
 		}
-		return Pair.of(Boolean.TRUE, lLastSeenString);
+		return Pair.of(BotReply.CHANNEL, lLastSeenString);
 	}
 
 }

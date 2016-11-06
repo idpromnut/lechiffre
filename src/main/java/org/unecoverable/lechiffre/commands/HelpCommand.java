@@ -44,7 +44,7 @@ public class HelpCommand implements ICommand, IConfigurable {
 	}
 
 	@Override
-	public Pair<Boolean, String> handle(IMessage message) {
+	public Pair<BotReply, String> handle(IMessage message) {
 		final String[] lChoppedMessage = StringUtils.split(message.getContent(), " ");
 		final IUser lAuthor = message.getAuthor();
 		final IGuild lGuild = message.getGuild();
@@ -79,7 +79,7 @@ public class HelpCommand implements ICommand, IConfigurable {
 			lHelpMessage = "The dark gods deem you unfit for help.";
 		}
 
-		return Pair.of(Boolean.TRUE, lHelpMessage);
+		return Pair.of(BotReply.PM, lHelpMessage);
 	}
 
 	private String getFormattedCommandHelpString(final ICommand command) {
