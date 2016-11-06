@@ -1,4 +1,4 @@
-package org.unecoverable.lechiffre.entities;
+package org.unrecoverable.lechiffre.entities;
 
 public interface IConfigurable {
 

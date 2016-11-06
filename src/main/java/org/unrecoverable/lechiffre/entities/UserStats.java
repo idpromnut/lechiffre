@@ -1,12 +1,12 @@
-package org.unecoverable.lechiffre.entities;
+package org.unrecoverable.lechiffre.entities;
 
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.unecoverable.lechiffre.stats.ActivityStatistic;
-import org.unecoverable.lechiffre.stats.HourlyBinnedStatistic;
+import org.unrecoverable.lechiffre.stats.ActivityStatistic;
+import org.unrecoverable.lechiffre.stats.HourlyBinnedStatistic;
 
 import lombok.Getter;
 

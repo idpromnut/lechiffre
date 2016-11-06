@@ -1,13 +1,13 @@
-package org.unecoverable.lechiffre.modules;
+package org.unrecoverable.lechiffre.modules;
 
 import java.util.LinkedList;
 import java.util.List;
 import org.apache.commons.lang3.tuple.Pair;
-import org.unecoverable.lechiffre.commands.BotReply;
-import org.unecoverable.lechiffre.commands.Commands;
-import org.unecoverable.lechiffre.commands.ICommand;
-import org.unecoverable.lechiffre.entities.Configuration;
-import org.unecoverable.lechiffre.entities.IConfigurable;
+import org.unrecoverable.lechiffre.commands.BotReply;
+import org.unrecoverable.lechiffre.commands.Commands;
+import org.unrecoverable.lechiffre.commands.ICommand;
+import org.unrecoverable.lechiffre.entities.Configuration;
+import org.unrecoverable.lechiffre.entities.IConfigurable;
 
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;

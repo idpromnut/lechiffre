@@ -1,4 +1,4 @@
-package org.unecoverable.lechiffre;
+package org.unrecoverable.lechiffre;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -9,19 +9,19 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang3.StringUtils;
-import org.unecoverable.lechiffre.commands.UserStatsCommand;
-import org.unecoverable.lechiffre.commands.GuildStatsCommand;
-import org.unecoverable.lechiffre.commands.HelpCommand;
-import org.unecoverable.lechiffre.commands.ICommand;
-import org.unecoverable.lechiffre.commands.IStatsCommand;
-import org.unecoverable.lechiffre.commands.LastSeenCommand;
-import org.unecoverable.lechiffre.commands.LogoutCommand;
-import org.unecoverable.lechiffre.commands.SaveStatsCommand;
-import org.unecoverable.lechiffre.commands.SelfStatsCommand;
-import org.unecoverable.lechiffre.entities.GuildStats;
-import org.unecoverable.lechiffre.entities.JsonSerializer;
-import org.unecoverable.lechiffre.modules.CommandModule;
-import org.unecoverable.lechiffre.modules.StatsModule;
+import org.unrecoverable.lechiffre.commands.UserStatsCommand;
+import org.unrecoverable.lechiffre.commands.GuildStatsCommand;
+import org.unrecoverable.lechiffre.commands.HelpCommand;
+import org.unrecoverable.lechiffre.commands.ICommand;
+import org.unrecoverable.lechiffre.commands.IStatsCommand;
+import org.unrecoverable.lechiffre.commands.LastSeenCommand;
+import org.unrecoverable.lechiffre.commands.LogoutCommand;
+import org.unrecoverable.lechiffre.commands.SaveStatsCommand;
+import org.unrecoverable.lechiffre.commands.SelfStatsCommand;
+import org.unrecoverable.lechiffre.entities.GuildStats;
+import org.unrecoverable.lechiffre.entities.JsonSerializer;
+import org.unrecoverable.lechiffre.modules.CommandModule;
+import org.unrecoverable.lechiffre.modules.StatsModule;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
 import lombok.extern.slf4j.Slf4j;
@@ -47,7 +47,7 @@ public class Bot {
 	private static final StatsModule statsModule = new StatsModule();
 	private static final CommandModule commandModule = new CommandModule();
 	private static final List<ICommand> commands = new LinkedList<>();
-	private static org.unecoverable.lechiffre.entities.Configuration configuration;
+	private static org.unrecoverable.lechiffre.entities.Configuration configuration;
 
 	public Bot() {
 
@@ -60,11 +60,11 @@ public class Bot {
 
 		// load in configuration
 		Reader lConfigReader;
-		Yaml readerYaml = new Yaml(new Constructor(org.unecoverable.lechiffre.entities.Configuration.class));
+		Yaml readerYaml = new Yaml(new Constructor(org.unrecoverable.lechiffre.entities.Configuration.class));
 		File lConfigFile = new File("etc/config.yml");
 		try {
 			lConfigReader = new FileReader(lConfigFile);
-			configuration = (org.unecoverable.lechiffre.entities.Configuration) readerYaml.load(lConfigReader);
+			configuration = (org.unrecoverable.lechiffre.entities.Configuration) readerYaml.load(lConfigReader);
 			log.info("Loaded configuration from {}: {}", lConfigFile, configuration);
 		} catch (FileNotFoundException e1) {
 			log.error("could not load configuration from {}", lConfigFile, e1);
@@ -170,10 +170,10 @@ public class Bot {
 
 	public static class StatsSaveWorker implements Runnable {
 
-		private org.unecoverable.lechiffre.entities.Configuration configuration;
+		private org.unrecoverable.lechiffre.entities.Configuration configuration;
 		private Thread worker;
 
-		public StatsSaveWorker(org.unecoverable.lechiffre.entities.Configuration configuration) {
+		public StatsSaveWorker(org.unrecoverable.lechiffre.entities.Configuration configuration) {
 			this.configuration = configuration;
 		}
 

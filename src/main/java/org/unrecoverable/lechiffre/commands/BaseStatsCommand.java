@@ -1,11 +1,11 @@
-package org.unecoverable.lechiffre.commands;
+package org.unrecoverable.lechiffre.commands;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import org.unecoverable.lechiffre.entities.GuildStats;
-import org.unecoverable.lechiffre.entities.User;
-import org.unecoverable.lechiffre.entities.UserStats;
+import org.unrecoverable.lechiffre.entities.GuildStats;
+import org.unrecoverable.lechiffre.entities.User;
+import org.unrecoverable.lechiffre.entities.UserStats;
 
 import lombok.Getter;
 import sx.blah.discord.handle.obj.IGuild;
@@ -43,5 +43,4 @@ public class BaseStatsCommand implements IStatsCommand {
 		}
 		return lUserStats;
 	}
-
 }

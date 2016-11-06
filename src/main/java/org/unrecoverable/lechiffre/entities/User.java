@@ -1,4 +1,4 @@
-package org.unecoverable.lechiffre.entities;
+package org.unrecoverable.lechiffre.entities;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 

@@ -1,4 +1,4 @@
-package org.unecoverable.lechiffre.commands;
+package org.unrecoverable.lechiffre.commands;
 
 public enum BotReply {
 	NONE,		// no reply

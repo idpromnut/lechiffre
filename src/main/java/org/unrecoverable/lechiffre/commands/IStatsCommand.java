@@ -1,6 +1,6 @@
-package org.unecoverable.lechiffre.commands;
+package org.unrecoverable.lechiffre.commands;
 
-import org.unecoverable.lechiffre.entities.GuildStats;
+import org.unrecoverable.lechiffre.entities.GuildStats;
 
 import sx.blah.discord.handle.obj.IGuild;
 

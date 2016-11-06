@@ -1,4 +1,4 @@
-package org.unecoverable.lechiffre.modules;
+package org.unrecoverable.lechiffre.modules;
 
 import java.util.HashMap;
 import java.util.List;
@@ -6,9 +6,9 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.unecoverable.lechiffre.entities.GuildStats;
-import org.unecoverable.lechiffre.entities.User;
-import org.unecoverable.lechiffre.entities.UserStats;
+import org.unrecoverable.lechiffre.entities.GuildStats;
+import org.unrecoverable.lechiffre.entities.User;
+import org.unrecoverable.lechiffre.entities.UserStats;
 import sx.blah.discord.api.IDiscordClient;
 import sx.blah.discord.api.events.EventSubscriber;
 import sx.blah.discord.handle.impl.events.MessageReceivedEvent;

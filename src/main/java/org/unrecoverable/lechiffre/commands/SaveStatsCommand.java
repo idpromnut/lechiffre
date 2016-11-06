@@ -1,13 +1,13 @@
-package org.unecoverable.lechiffre.commands;
+package org.unrecoverable.lechiffre.commands;
 
 import java.io.File;
 import java.util.Map;
 
 import org.apache.commons.lang3.tuple.Pair;
-import org.unecoverable.lechiffre.entities.Configuration;
-import org.unecoverable.lechiffre.entities.GuildStats;
-import org.unecoverable.lechiffre.entities.IConfigurable;
-import org.unecoverable.lechiffre.entities.JsonSerializer;
+import org.unrecoverable.lechiffre.entities.Configuration;
+import org.unrecoverable.lechiffre.entities.GuildStats;
+import org.unrecoverable.lechiffre.entities.IConfigurable;
+import org.unrecoverable.lechiffre.entities.JsonSerializer;
 
 import lombok.extern.slf4j.Slf4j;
 import sx.blah.discord.handle.obj.IGuild;

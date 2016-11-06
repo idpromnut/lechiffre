@@ -1,4 +1,4 @@
-package org.unecoverable.lechiffre.stats;
+package org.unrecoverable.lechiffre.stats;
 
 import java.time.ZonedDateTime;
 
@@ -12,7 +12,9 @@ public class ActivityStatistic {
 	private HourlyBinnedStatistic online = new HourlyBinnedStatistic();
 
 	public void activity() {
-		setLastActivity(ZonedDateTime.now());
-		online.mark();
+		ZonedDateTime lActivityMark = ZonedDateTime.now();
+		if (getFirstSeen() == null) setFirstSeen(lActivityMark);
+		setLastActivity(lActivityMark);
+		getOnline().mark(lActivityMark);
 	}
 }

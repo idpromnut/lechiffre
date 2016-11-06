@@ -1,7 +1,7 @@
-package org.unecoverable.lechiffre.commands;
+package org.unrecoverable.lechiffre.commands;
 
 import org.apache.commons.lang3.tuple.Pair;
-import org.unecoverable.lechiffre.entities.GuildStats;
+import org.unrecoverable.lechiffre.entities.GuildStats;
 import sx.blah.discord.handle.obj.IGuild;
 import sx.blah.discord.handle.obj.IMessage;
 import sx.blah.discord.handle.obj.IUser;

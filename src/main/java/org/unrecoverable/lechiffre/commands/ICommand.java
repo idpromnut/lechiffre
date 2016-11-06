@@ -1,4 +1,4 @@
-package org.unecoverable.lechiffre.commands;
+package org.unrecoverable.lechiffre.commands;
 
 import org.apache.commons.lang3.tuple.Pair;
 

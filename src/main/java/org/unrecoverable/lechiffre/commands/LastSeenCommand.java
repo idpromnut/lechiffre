@@ -1,11 +1,11 @@
-package org.unecoverable.lechiffre.commands;
+package org.unrecoverable.lechiffre.commands;
 
 import java.time.format.DateTimeFormatter;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
-import org.unecoverable.lechiffre.entities.User;
-import org.unecoverable.lechiffre.entities.UserStats;
+import org.unrecoverable.lechiffre.entities.User;
+import org.unrecoverable.lechiffre.entities.UserStats;
 
 import lombok.extern.slf4j.Slf4j;
 import sx.blah.discord.handle.obj.IMessage;

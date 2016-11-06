@@ -1,12 +1,12 @@
-package org.unecoverable.lechiffre.commands;
+package org.unrecoverable.lechiffre.commands;
 
 import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
-import org.unecoverable.lechiffre.entities.Configuration;
-import org.unecoverable.lechiffre.entities.IConfigurable;
+import org.unrecoverable.lechiffre.entities.Configuration;
+import org.unrecoverable.lechiffre.entities.IConfigurable;
 
 import sx.blah.discord.handle.obj.IGuild;
 import sx.blah.discord.handle.obj.IMessage;

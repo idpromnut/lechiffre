@@ -1,4 +1,4 @@
-package org.unecoverable.lechiffre.commands;
+package org.unrecoverable.lechiffre.commands;
 
 import java.util.ArrayList;
 import java.util.List;
