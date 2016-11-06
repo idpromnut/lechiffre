@@ -65,6 +65,11 @@
 			<artifactId>commons-collections4</artifactId>
 			<version>4.1</version>
 		</dependency>
+		<dependency>
+			<groupId>jfree</groupId>
+			<artifactId>jfreechart</artifactId>
+			<version>1.0.13</version>
+		</dependency>
 	</dependencies>
 
 	<build>
@@ -99,7 +104,7 @@
 									<!-- the next line is added by default if you don't have wrapperMainClass's
 										setting -->
 									<wrapperMainClass>org.tanukisoftware.wrapper.WrapperSimpleApp</wrapperMainClass>
-									<mainClass>org.unecoverable.lechiffre.Bot</mainClass>
+									<mainClass>org.unrecoverable.lechiffre.Bot</mainClass>
 									<platforms>
 										<platform>jsw</platform>
 									</platforms>
