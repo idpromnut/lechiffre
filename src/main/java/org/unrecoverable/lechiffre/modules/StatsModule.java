@@ -1,14 +1,20 @@
 package org.unrecoverable.lechiffre.modules;
 
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.unrecoverable.lechiffre.MissingGuildException;
+import org.unrecoverable.lechiffre.entities.Channel;
+import org.unrecoverable.lechiffre.entities.ChannelStats;
 import org.unrecoverable.lechiffre.entities.GuildStats;
 import org.unrecoverable.lechiffre.entities.User;
 import org.unrecoverable.lechiffre.entities.UserStats;
+import org.unrecoverable.lechiffre.stats.HourlyBinnedStatistic;
+
+import lombok.extern.slf4j.Slf4j;
 import sx.blah.discord.api.IDiscordClient;
 import sx.blah.discord.api.events.EventSubscriber;
 import sx.blah.discord.handle.impl.events.MessageReceivedEvent;
@@ -19,6 +25,7 @@ import sx.blah.discord.handle.impl.events.TypingEvent;
 import sx.blah.discord.handle.impl.events.UserJoinEvent;
 import sx.blah.discord.handle.impl.events.UserLeaveEvent;
 import sx.blah.discord.handle.impl.events.UserVoiceChannelJoinEvent;
+import sx.blah.discord.handle.obj.IChannel;
 import sx.blah.discord.handle.obj.IGuild;
 import sx.blah.discord.handle.obj.IMessage;
 import sx.blah.discord.handle.obj.IUser;
@@ -34,11 +41,12 @@ import sx.blah.discord.modules.IModule;
  * @author Chris Matthews
  *
  */
+@Slf4j
 public class StatsModule implements IModule {
-	private static final Logger LOGGER = LoggerFactory.getLogger(StatsModule.class);
 
 	private IDiscordClient client;
 	private Map<IGuild, GuildStats> guildStatsMap = new HashMap<>();
+	private ZoneId zone = ZoneOffset.systemDefault();
 
 	public StatsModule() {
 	}
@@ -110,9 +118,14 @@ public class StatsModule implements IModule {
 		final IDiscordClient lClient = event.getClient();
 		final IMessage lMessage = event.getMessage();
 		final IUser lAuthor = lMessage.getAuthor();
+		final IChannel lChannel = lMessage.getChannel();
+		final IGuild lGuild = lMessage.getGuild();
 		updateUserStats(lAuthor, lClient);
-		updateUserMessagesAuthored(lAuthor, lClient);
+		updateUserMessagesAuthored(lAuthor, lMessage, lClient);
 		updateUserMentions(lAuthor, lMessage, lClient);
+		if (lGuild != null) {
+			updateChannelStats(lChannel, lMessage, lGuild, lClient);
+		}
 	}
 
 	@EventSubscriber
@@ -163,37 +176,75 @@ public class StatsModule implements IModule {
 		if (!client.getOurUser().getID().equals(user.getID())) {
 			UserStats lUserStats = lookupUserStats(user);
 			if (lUserStats != null) {
-				LOGGER.debug("Presence updated for {} [{}]", user.getName(), user.getPresence());
+				log.debug("Presence updated for {} [{}]", user.getName(), user.getPresence());
 				lUserStats.getPresence().activity();
 			}
 		}
 	}
 
+	// TODO: need to fix this so that a user would be added to the /right/ guild. What happens if the same user is in multiple guilds?
 	private UserStats lookupUserStats(final IUser user) {
 		UserStats lUserStats = null;
 		for(GuildStats lGuildStats: guildStatsMap.values()) {
-			if (lGuildStats.isTracked(user.getID())) {
-				lUserStats = lGuildStats.getStats(user.getID());
+			if (lGuildStats.isTrackedUser(user.getID())) {
+				lUserStats = lGuildStats.getUserStats(user.getID());
 			} else {
 				lUserStats = new UserStats();
 				User lUser = new User(user.getID(), user.getName(), user.getDiscriminator());
 				lGuildStats.addUser(lUser, lUserStats);
-				LOGGER.info("{}'s presence is now being tracked", user.getName());
+				log.info("{}'s presence is now being tracked", user.getName());
 			}
 		}
 		return lUserStats;
 	}
 
-	private int updateUserMessagesAuthored(final IUser user, final IDiscordClient client) {
+	private int updateUserMessagesAuthored(final IUser user, final IMessage message, final IDiscordClient client) {
 		int lMessagesAuthored = 0;
+		IChannel lChannel = message.getChannel();
 		if (!client.getOurUser().getID().equals(user.getID())) {
 			UserStats lUserStats = lookupUserStats(user);
 			if (lUserStats != null) {
 				lMessagesAuthored = lUserStats.getMessagesAuthored().incrementAndGet();
-				LOGGER.debug("Authored message count updated for {} [{}]", user.getName(), lMessagesAuthored);
+				HourlyBinnedStatistic lChannelMessageStats = lUserStats.getChannelHourlyBinnedStatById(lChannel.getID());
+				lChannelMessageStats.mark(message.getCreationDate().atZone(zone));
+				log.debug("Authored message count updated for {} [{}]", user.getName(), lMessagesAuthored);
 			}
 		}
 		return lMessagesAuthored;
+	}
+
+	private void updateChannelStats(final IChannel channel, final IMessage message, final IGuild guild, final IDiscordClient client) {
+		if (!channel.isPrivate()) {
+			try {
+				ChannelStats lChannelStats = lookupChannelStats(channel, guild);
+				lChannelStats.getMessages().mark(message.getCreationDate().atZone(zone));
+				log.debug("Channel message stats updated for {} [{}]", channel.getName(), lChannelStats.getMessages().getBinSum());
+			}
+			catch(MissingGuildException e) {
+				log.error("Could not update channel stats for {}", channel.getName(), e);
+			}
+		}
+	}
+
+	private ChannelStats lookupChannelStats(final IChannel channel, final IGuild guild) {
+		ChannelStats lChannelStats = null;
+		GuildStats lGuildStats = guildStatsMap.get(guild);
+
+		if (lGuildStats != null) {
+			if (lGuildStats.isTrackedChannel(channel.getID())) {
+				lChannelStats = lGuildStats.getChannelStats(channel.getID());
+			}
+			else {
+				lChannelStats = new ChannelStats();
+				Channel lChannel = new Channel(channel.getID(), channel.getName());
+				lGuildStats.addChannel(lChannel, lChannelStats);
+			}
+			log.info("Added {} to list of tracked channels in {}", channel.getName());
+		}
+		else {
+			throw new MissingGuildException("unknown guild: " + guild);
+		}
+		return lChannelStats;
 	}
 
 	private void updateUserMentions(final IUser author, final IMessage message, final IDiscordClient client) {
@@ -202,10 +253,10 @@ public class StatsModule implements IModule {
 			List<IUser> lMentions = message.getMentions();
 			for(IUser lUser: lMentions) {
 				for(GuildStats lGuildStats: guildStatsMap.values()) {
-					if (lGuildStats.isTracked(lUser.getID())) {
+					if (lGuildStats.isTrackedUser(lUser.getID())) {
 						lUserStats = lGuildStats.getUserStats().get(lUser.getID());
 						int lMentionCount = lUserStats.getMentions().incrementAndGet();
-						LOGGER.debug("Mention count by other users updated for {} [{}]", lUser.getName(), lMentionCount);
+						log.debug("Mention count by other users updated for {} [{}]", lUser.getName(), lMentionCount);
 
 						break;  // only want to update the mentions once per user found in the message
 					}

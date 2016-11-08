@@ -36,4 +36,11 @@ public class BinnedStatistic {
 			bins[i] = 0;
 		}
 	}
+
+	public long getBinSum() {
+		long lSum = 0;
+		for(int i = 0; i < getNumberOfBins(); i++)
+			lSum += getBins()[i];
+		return lSum;
+	}
 }

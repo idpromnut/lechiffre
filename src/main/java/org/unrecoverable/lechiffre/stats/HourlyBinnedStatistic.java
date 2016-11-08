@@ -17,16 +17,16 @@ public class HourlyBinnedStatistic extends BinnedStatistic {
 		mark(ZonedDateTime.now());
 	}
 
-	public void mark(final ZonedDateTime iMark) {
-		int hour = iMark.getHour();
+	public void mark(final ZonedDateTime mark) {
+		int lHour = mark.getHour();
 		if (getLastMark() != null) {
-			if (iMark.isAfter(getLastMark().plusHours(1))) {
-				super.mark(iMark, hour);
+			if (mark.isAfter(getLastMark().plusHours(1))) {
+				super.mark(mark, lHour);
 			}
 			// otherwise the last mark did not occur at least an hour before now, so we have already incremented "this" hour counter
 		}
 		else {
-			super.mark(iMark, hour);
+			super.mark(mark, lHour);
 		}
 	}
 

@@ -1,10 +1,15 @@
 package org.unrecoverable.lechiffre.entities;
 
-import lombok.Data;
+import org.unrecoverable.lechiffre.stats.HourlyBinnedStatistic;
 
-@Data
+import lombok.Getter;
+
 public class ChannelStats {
 
-	private int messagesPosted;
+	@Getter
+	private HourlyBinnedStatistic messages = new HourlyBinnedStatistic();
+
+	public ChannelStats() {
+	}
 
 }

@@ -38,9 +38,10 @@ public class BaseStatsCommand implements IStatsCommand {
 	public UserStats findUserStats(User user) {
 		UserStats lUserStats = null;
 		for(GuildStats lGuildStats: guildStatsMap.values()) {
-			lUserStats = lGuildStats.getStats(user.getId());
+			lUserStats = lGuildStats.getUserStats(user.getId());
 			if (lUserStats != null) break;
 		}
 		return lUserStats;
 	}
+
 }
