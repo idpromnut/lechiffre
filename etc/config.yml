@@ -1,4 +1,5 @@
 botToken:
+ownerId: 189577713026072576
 roleToCommandPermissions:
   '@everyone':
   - help
@@ -9,11 +10,16 @@ roleToCommandPermissions:
   - logout
   - save
   - stats
+  - textstats
+  - voicestats
   'owner':
   - help
   - logout
   - save
+  - stats
   - guildstats
+  - textstats
+  - voicestats
 dataDirectoryPath: ../
 statsSavePeriodMinutes: 10
 #channelReplyWhitelist:

@@ -30,7 +30,7 @@ public class UserStats {
 
 	/** A map of IChannel snowflake IDs to hourly binned statistics for the tracked user. */
 	@Getter
-	private Map<Channel, HourlyBinnedStatistic> messageHistogramByChannel = new HashMap<>();
+	private Map<String, HourlyBinnedStatistic> messageHistogramByChannelId = new HashMap<>();
 
 
 	public UserStats() {
@@ -38,17 +38,18 @@ public class UserStats {
 
 	@JsonIgnore
 	public HourlyBinnedStatistic getChannelHourlyBinnedStatById(String snowflakeId) {
-		HourlyBinnedStatistic lStat = null;
-		for(Channel lChannel: messageHistogramByChannel.keySet()) {
-			if (snowflakeId.equals(lChannel.getId())) {
-				lStat = messageHistogramByChannel.get(lChannel);
-			}
-		}
+		HourlyBinnedStatistic lStat = messageHistogramByChannelId.get(snowflakeId);
+		return lStat;
+	}
+	
+	public HourlyBinnedStatistic trackChannel(final String channelSnowflakeId) {
+		HourlyBinnedStatistic lStat = new HourlyBinnedStatistic();
+		messageHistogramByChannelId.put(channelSnowflakeId, lStat);
 		return lStat;
 	}
 
-	@Override
-	public String toString() {
+	@JsonIgnore
+	public String getFormattedStats() {
 		final DateTimeFormatter lActiveHourFormatter = new DateTimeFormatterBuilder()
 				.appendPattern("h a")
 				.toFormatter();
@@ -70,4 +71,11 @@ public class UserStats {
 		lBuilder.append("mentions by others:                 **").append(mentions.get()).append("**\n");
 		return lBuilder.toString();
 	}
+
+	@Override
+	public String toString() {
+		return "UserStats [presence=" + presence + ", messagesAuthored=" + messagesAuthored + ", mentions=" + mentions
+				+ ", messageHistogramByChannelId=" + messageHistogramByChannelId + "]";
+	}
+
 }

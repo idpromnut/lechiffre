@@ -1,8 +1,12 @@
 package org.unrecoverable.lechiffre.stats;
 
 import java.time.ZonedDateTime;
+import java.util.Arrays;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import lombok.Getter;
+import lombok.Setter;
 
 /**
  * This statistic forms the base of a binned statistic. The number of bins is configurable, and it will
@@ -12,13 +16,13 @@ import lombok.Getter;
  */
 public class BinnedStatistic {
 
-	@Getter
+	@Getter @Setter
 	private ZonedDateTime lastMark = null;
 
-	@Getter
+	@Getter @Setter
 	private int numberOfBins;
 
-	@Getter
+	@Getter @Setter
 	private int[] bins;
 
 	public BinnedStatistic(int bins) {
@@ -37,10 +41,17 @@ public class BinnedStatistic {
 		}
 	}
 
+	@JsonIgnore
 	public long getBinSum() {
 		long lSum = 0;
 		for(int i = 0; i < getNumberOfBins(); i++)
 			lSum += getBins()[i];
 		return lSum;
+	}
+
+	@Override
+	public String toString() {
+		return "BinnedStatistic [lastMark=" + lastMark + ", numberOfBins=" + numberOfBins + ", bins="
+				+ Arrays.toString(bins) + "]";
 	}
 }

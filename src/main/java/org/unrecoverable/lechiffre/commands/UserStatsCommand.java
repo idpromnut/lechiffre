@@ -55,7 +55,7 @@ public class UserStatsCommand extends BaseStatsCommand implements ICommand {
 
 			User lUser = searchForUser(lChoppedContent[1]);
 			if (message.getChannel().isPrivate() && lUser != null) {
-				gitDatChart(lUser, findUserStats(lUser), message.getChannel());
+				pushUserActivityChart(lUser, findUserStats(lUser), message.getChannel());
 			}
 			return Pair.of(BotReply.PM, getStatsForUser(lChoppedContent[1]));
 		}
@@ -69,13 +69,13 @@ public class UserStatsCommand extends BaseStatsCommand implements ICommand {
 		if (lUser != null) {
 			UserStats lStats = findUserStats(lUser);
 			if (lStats != null) {
-				lUserStatsString = "__**" + lUser.getName() + "**__:\n" + lStats.toString() + "\n";
+				lUserStatsString = "__**" + lUser.getName() + "**__:\n" + lStats.getFormattedStats() + "\n";
 			}
 		}
 		return lUserStatsString;
 	}
 
-	protected void gitDatChart(final User user, final UserStats userStats, final IChannel channel) {
+	protected void pushUserActivityChart(final User user, final UserStats userStats, final IChannel channel) {
 		final DateTimeFormatter lActiveHourFormatter = new DateTimeFormatterBuilder()
 				.appendPattern("h a")
 				.toFormatter();

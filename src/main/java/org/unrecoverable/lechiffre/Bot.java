@@ -10,6 +10,8 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang3.StringUtils;
 import org.unrecoverable.lechiffre.commands.UserStatsCommand;
+import org.unrecoverable.lechiffre.commands.VoiceChannelStatsCommand;
+import org.unrecoverable.lechiffre.commands.TextChannelStatsCommand;
 import org.unrecoverable.lechiffre.commands.GuildStatsCommand;
 import org.unrecoverable.lechiffre.commands.HelpCommand;
 import org.unrecoverable.lechiffre.commands.ICommand;
@@ -68,6 +70,7 @@ public class Bot {
 			log.info("Loaded configuration from {}: {}", lConfigFile, configuration);
 		} catch (FileNotFoundException e1) {
 			log.error("could not load configuration from {}", lConfigFile, e1);
+			configuration = new org.unrecoverable.lechiffre.entities.Configuration();
 		}
 
 		// create command list
@@ -80,6 +83,8 @@ public class Bot {
 		commands.add(new LastSeenCommand());
 		commands.add(new GuildStatsCommand());
 		commands.add(new SelfStatsCommand());
+		commands.add(new TextChannelStatsCommand());
+		commands.add(new VoiceChannelStatsCommand());
 
 		// create the help command using all the previously defined commands
 		HelpCommand lHelpCommand = new HelpCommand(commands);
@@ -91,7 +96,6 @@ public class Bot {
 		// set up periodic stats saving thread
 		StatsSaveWorker lStatsSaveWorker = new Bot.StatsSaveWorker(configuration);
 		lStatsSaveWorker.start();
-
 
 		try {
 			// try and get token from configuration file
@@ -134,6 +138,7 @@ public class Bot {
 
 					if (lStats != null) {
 						log.info("Guild stats for {} have been loaded from disk", lGuild.getName());
+						log.debug("Guild stats: {}", lStats);
 					}
 					else {
 						lStats = new GuildStats();
@@ -159,7 +164,7 @@ public class Bot {
 					log.info("New channel {} in {}", e.getChannel().getName(), e.getChannel().getGuild().getName());
 				}
 			});
-
+			
 			client.login();
 
 			// The modules should handle the rest

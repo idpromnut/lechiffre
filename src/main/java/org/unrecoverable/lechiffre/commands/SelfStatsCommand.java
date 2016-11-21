@@ -31,7 +31,7 @@ public class SelfStatsCommand extends UserStatsCommand {
 		if (lAuthor != null) {
 			User lUser = searchForUser(lAuthor.getName());
 			if (message.getChannel().isPrivate() && lUser != null) {
-				gitDatChart(lUser, findUserStats(lUser), message.getChannel());
+				pushUserActivityChart(lUser, findUserStats(lUser), message.getChannel());
 			}
 			return Pair.of(BotReply.CHANNEL, getStatsForUser(lAuthor.getName()));
 		}

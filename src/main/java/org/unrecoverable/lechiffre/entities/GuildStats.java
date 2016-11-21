@@ -35,8 +35,8 @@ public class GuildStats {
 	}
 
 	@JsonIgnore
-	public UserStats getUserStats(final String userId) {
-		return userStats.get(userId);
+	public UserStats getUserStats(final String userSnowflakeId) {
+		return userStats.get(userSnowflakeId);
 	}
 
 	public void addChannel(final Channel channel, final ChannelStats channelStats) {
@@ -45,36 +45,36 @@ public class GuildStats {
 	}
 
 	@JsonIgnore
-	public ChannelStats getChannelStats(final String channelId) {
-		return channelStats.get(channelId);
+	public ChannelStats getChannelStats(final String channelSnowflakeId) {
+		return channelStats.get(channelSnowflakeId);
 	}
 
 	@JsonIgnore
-	public boolean isTrackedUser(final String userId) {
+	public boolean isTrackedUser(final String userSnowflakeId) {
 		boolean lTracked = false;
-		if (users.containsKey(userId) && userStats.containsKey(userId)) {
+		if (users.containsKey(userSnowflakeId) && userStats.containsKey(userSnowflakeId)) {
 			lTracked = true;
 		}
-		else if (users.containsKey(userId)) {
-			users.remove(userId);
+		else if (users.containsKey(userSnowflakeId)) {
+			users.remove(userSnowflakeId);
 		}
 		else {
-			userStats.remove(userId);
+			userStats.remove(userSnowflakeId);
 		}
 		return lTracked;
 	}
 
 	@JsonIgnore
-	public boolean isTrackedChannel(final String channelId) {
+	public boolean isTrackedChannel(final String channelSnowflakeId) {
 		boolean lIsGuildChannel = false;
-		if (channels.containsKey(channelId) && channelStats.containsKey(channelId)) {
+		if (channels.containsKey(channelSnowflakeId) && channelStats.containsKey(channelSnowflakeId)) {
 			lIsGuildChannel = true;
 		}
-		else if (channels.containsKey(channelId)) {
-			channels.remove(channelId);
+		else if (channels.containsKey(channelSnowflakeId)) {
+			channels.remove(channelSnowflakeId);
 		}
 		else {
-			channelStats.remove(channelId);
+			channelStats.remove(channelSnowflakeId);
 		}
 		return lIsGuildChannel;
 	}
@@ -98,4 +98,12 @@ public class GuildStats {
 
 		return lTotalMentions;
 	}
+
+	@Override
+	public String toString() {
+		return "GuildStats [users=" + users + ", userStats=" + userStats + ", channels=" + channels + ", channelStats="
+				+ channelStats + "]";
+	}
+	
+	
 }

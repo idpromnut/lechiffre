@@ -1,14 +1,13 @@
 package org.unrecoverable.lechiffre.entities;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 
-@JsonInclude
 @Data
 @EqualsAndHashCode(of={"id"})
+@AllArgsConstructor
 public class Channel {
 
 	@NonNull
@@ -16,4 +15,6 @@ public class Channel {
 
 	@NonNull
 	private String name;
+	
+	private boolean voice;
 }

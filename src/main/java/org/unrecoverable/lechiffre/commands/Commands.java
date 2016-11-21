@@ -21,7 +21,9 @@ public final class Commands {
 
 	public static final String CMD_GUILD_STATS = "guildstats";
 
-	public static final String CMD_CHANNEL_STATS = "channelstats";
+	public static final String CMD_TEXT_CHANNEL_STATS = "textstats";
+
+	public static final String CMD_VOICE_CHANNEL_STATS = "voicestats";
 
 	public static final String CMD_MOST_ACTIVE_STATS = "mostactive";
 
@@ -39,6 +41,8 @@ public final class Commands {
 		lCommands.add(CMD_STATS);
 		lCommands.add(CMD_GUILD_STATS);
 		lCommands.add(CMD_SKILLZ);
+		lCommands.add(CMD_TEXT_CHANNEL_STATS);
+		lCommands.add(CMD_VOICE_CHANNEL_STATS);
 		return lCommands;
 	}
 }

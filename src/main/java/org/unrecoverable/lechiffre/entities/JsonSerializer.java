@@ -36,7 +36,8 @@ public class JsonSerializer {
 			if (!statsFile.delete()) {
 				log.warn("could not delete old save file {}. New stats have been written to {}", statsFile.getAbsolutePath(), lTempFile.getAbsolutePath());
 			}
-			else {
+
+			if (!statsFile.exists()) {
 				lTempFile.renameTo(statsFile);
 			}
 		} catch (IOException e) {

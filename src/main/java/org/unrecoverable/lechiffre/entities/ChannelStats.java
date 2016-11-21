@@ -12,4 +12,9 @@ public class ChannelStats {
 	public ChannelStats() {
 	}
 
+	@Override
+	public String toString() {
+		return "ChannelStats [messages=" + messages + "]";
+	}
+	
 }

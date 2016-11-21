@@ -24,6 +24,11 @@ public class Configuration {
 	 * Bot token that is generated in the Discord App Bot User settings
 	 */
 	private String botToken;
+	
+	/**
+	 * Set this to get error reports when a problem occurs with lechiffre
+	 */
+	private String ownerId;
 
 	/**
 	 * Map of roles to lists of commands
