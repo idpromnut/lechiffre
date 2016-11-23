@@ -18,7 +18,6 @@ import org.jfree.chart.ChartUtilities;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.data.category.DefaultCategoryDataset;
-import org.jfree.data.category.DefaultIntervalCategoryDataset;
 import org.unrecoverable.lechiffre.entities.ChannelStats;
 import org.unrecoverable.lechiffre.entities.GuildStats;
 
@@ -131,12 +130,6 @@ public abstract class ChannelStatsCommand extends BaseStatsCommand implements IC
 			addChannelMessageStatsToDataSet(lStats.getKey(), lStats.getValue(), lDataSet);
 		}
 		
-//		JFreeChart lChart = ChartFactory.createBarChart(
-//				"Activity Histogram for " + name,
-//				"Time of Day",
-//				"",
-//				lDataSet, PlotOrientation.VERTICAL, (channels.size() > 1), true, false);
-
 		JFreeChart lChart = ChartFactory.createAreaChart(
 				"Activity Histogram for " + name,
 				"Time of Day",

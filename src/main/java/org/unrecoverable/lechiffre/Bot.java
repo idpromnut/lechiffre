@@ -1,13 +1,17 @@
 package org.unrecoverable.lechiffre;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.IOException;
 import java.io.Reader;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.unrecoverable.lechiffre.commands.UserStatsCommand;
 import org.unrecoverable.lechiffre.commands.VoiceChannelStatsCommand;
@@ -23,6 +27,7 @@ import org.unrecoverable.lechiffre.commands.SelfStatsCommand;
 import org.unrecoverable.lechiffre.entities.GuildStats;
 import org.unrecoverable.lechiffre.entities.JsonSerializer;
 import org.unrecoverable.lechiffre.modules.CommandModule;
+import org.unrecoverable.lechiffre.modules.GreetingModule;
 import org.unrecoverable.lechiffre.modules.StatsModule;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
@@ -36,16 +41,16 @@ import sx.blah.discord.handle.obj.IGuild;
 import sx.blah.discord.handle.obj.IPrivateChannel;
 import sx.blah.discord.handle.obj.IUser;
 import sx.blah.discord.modules.Configuration;
+import sx.blah.discord.modules.IModule;
 import sx.blah.discord.modules.ModuleLoader;
 import sx.blah.discord.util.DiscordException;
 
 @Slf4j
 public class Bot {
 
-//	private static final String OWNER_CLIENT_ID = "189577713026072576";  // idpromnut#0111
-
 	private static final JsonSerializer JSON_SERIALIZER = new JsonSerializer();
 
+	private static final GreetingModule greetsModule = new GreetingModule();
 	private static final StatsModule statsModule = new StatsModule();
 	private static final CommandModule commandModule = new CommandModule();
 	private static final List<ICommand> commands = new LinkedList<>();
@@ -61,7 +66,7 @@ public class Bot {
 			throw new RuntimeException("Invalid configuration!");
 
 		// load in configuration
-		Reader lConfigReader;
+		Reader lConfigReader = null;
 		Yaml readerYaml = new Yaml(new Constructor(org.unrecoverable.lechiffre.entities.Configuration.class));
 		File lConfigFile = new File("etc/config.yml");
 		try {
@@ -71,6 +76,9 @@ public class Bot {
 		} catch (FileNotFoundException e1) {
 			log.error("could not load configuration from {}", lConfigFile, e1);
 			configuration = new org.unrecoverable.lechiffre.entities.Configuration();
+		}
+		finally {
+			IOUtils.closeQuietly(lConfigReader);
 		}
 
 		// create command list
@@ -89,10 +97,30 @@ public class Bot {
 		// create the help command using all the previously defined commands
 		HelpCommand lHelpCommand = new HelpCommand(commands);
 		commands.add(lHelpCommand);
-
 		commandModule.getCommandChain().addAll(commands);
-		commandModule.configure(configuration);
 
+		// Load and configure Greeting module
+		File lGreetingsFile = new File("etc/welcome.txt");
+		BufferedReader lGreetingMessageReader = null;
+		try {
+			lGreetingMessageReader = new BufferedReader(new FileReader(lGreetingsFile));
+			List<String> lGreetings = new ArrayList<>();
+			while(lGreetingMessageReader.ready()) {
+				lGreetings.add(lGreetingMessageReader.readLine());
+			}
+			greetsModule.setNewUserGreetMessages(lGreetings);
+			log.info("Loaded greetings from {}", lGreetingsFile);
+		} catch (IOException e1) {
+			log.error("could not load greetings from {}", lGreetingsFile, e1);
+		}
+		finally {
+			IOUtils.closeQuietly(lGreetingMessageReader);
+		}
+		
+		
+		// configure all modules that require it
+		commandModule.configure(configuration);
+		
 		// set up periodic stats saving thread
 		StatsSaveWorker lStatsSaveWorker = new Bot.StatsSaveWorker(configuration);
 		lStatsSaveWorker.start();
@@ -124,6 +152,11 @@ public class Bot {
 			ModuleLoader lModuleLoader = new ModuleLoader(client);
 			lModuleLoader.loadModule(statsModule);
 			lModuleLoader.loadModule(commandModule);
+			lModuleLoader.loadModule(greetsModule);
+			
+			for(IModule lModule: lModuleLoader.getLoadedModules()) {
+				log.info("Loaded module {} by {}, version {}", lModule.getName(), lModule.getAuthor(), lModule.getVersion());
+			}
 
 			client.getDispatcher().registerListener((IListener<ReadyEvent>) (ReadyEvent e) -> {
 				IUser lBot = e.getClient().getOurUser();

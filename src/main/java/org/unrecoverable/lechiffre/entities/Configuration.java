@@ -31,6 +31,11 @@ public class Configuration {
 	private String ownerId;
 
 	/**
+	 * Channel to publish informational messages to (greetings for example).
+	 */
+	private String infoChannel;
+	
+	/**
 	 * Map of roles to lists of commands
 	 */
 	@NonNull

@@ -3,9 +3,13 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.unrecoverable</groupId>
 	<artifactId>lechiffre</artifactId>
-	<version>0.0.5-SNAPSHOT</version>
+	<version>0.1.0</version>
 	<name>Le Chiffre</name>
 	<description>Stats Bot for Discord</description>
+	
+	<organization>
+		<name>nybble</name>
+	</organization>
 
 	<repositories>
 		<repository>
@@ -85,6 +89,20 @@
 			</plugin>
 
 			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>3.0.2</version>
+				<configuration>
+					<archive>
+						<manifest>
+							<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+							<addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
+						</manifest>
+					</archive>
+				</configuration>
+			</plugin>
+
+			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>appassembler-maven-plugin</artifactId>
 				<version>1.10</version>
@@ -101,7 +119,7 @@
 							<daemons>
 								<daemon>
 									<id>lechiffre</id>
-									<!-- the next line is added by default if you don't have wrapperMainClass's
+									<!-- the next line is added by default if you don't have wrapperMainClass's 
 										setting -->
 									<wrapperMainClass>org.tanukisoftware.wrapper.WrapperSimpleApp</wrapperMainClass>
 									<mainClass>org.unrecoverable.lechiffre.Bot</mainClass>

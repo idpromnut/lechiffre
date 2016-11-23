@@ -54,7 +54,7 @@ public class StatsModule implements IModule {
 	private IDiscordClient client;
 	private Map<IGuild, GuildStats> guildStatsMap = new HashMap<>();
 	private ZoneId zone = ZoneOffset.systemDefault();
-
+	
 	public StatsModule() {
 	}
 
@@ -71,17 +71,17 @@ public class StatsModule implements IModule {
 
 	@Override
 	public String getName() {
-		return "CommandModule";
+		return "StatsModule";
 	}
 
 	@Override
 	public String getAuthor() {
-		return "nybbles";
+		return getClass().getPackage().getImplementationVendor();
 	}
 
 	@Override
 	public String getVersion() {
-		return "1.0";
+		return getClass().getPackage().getImplementationVersion();
 	}
 
 	@Override
@@ -252,10 +252,7 @@ public class StatsModule implements IModule {
 			lUserStats = lGuildStats.getUserStats(user.getID());
 		}
 		else {
-			lUserStats = new UserStats();
-			User lUser = new User(user.getID(), user.getName(), user.getDiscriminator());
-			lGuildStats.addUser(lUser, lUserStats);
-			log.info("{}'s presence is now being tracked", user.getName());
+			lUserStats = trackUser(user, lGuildStats);
 		}
 		
 		return lUserStats;
@@ -327,5 +324,13 @@ public class StatsModule implements IModule {
 				log.debug("Mention count by other users updated for {} [{}]", lUser.getName(), lMentionCount);
 			}
 		}
+	}
+	
+	private UserStats trackUser(IUser user, GuildStats guildStats) {
+		UserStats lUserStats = new UserStats();
+		User lUser = new User(user.getID(), user.getName(), user.getDiscriminator());
+		guildStats.addUser(lUser, lUserStats);
+		log.info("{}'s presence is now being tracked", user.getName());
+		return lUserStats;
 	}
 }

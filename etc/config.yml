@@ -1,5 +1,6 @@
 botToken:
-ownerId: 189577713026072576
+ownerId: 
+infoChannel: general
 roleToCommandPermissions:
   '@everyone':
   - help

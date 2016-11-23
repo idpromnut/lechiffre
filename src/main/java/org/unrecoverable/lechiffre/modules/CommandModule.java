@@ -55,12 +55,12 @@ public class CommandModule implements IModule, IConfigurable {
 
 	@Override
 	public String getAuthor() {
-		return "nybbles";
+		return getClass().getPackage().getImplementationVendor();
 	}
 
 	@Override
 	public String getVersion() {
-		return "1.0";
+		return getClass().getPackage().getImplementationVersion();
 	}
 
 	@Override
