@@ -23,4 +23,8 @@ roleToCommandPermissions:
   - voicestats
 dataDirectoryPath: ../
 statsSavePeriodMinutes: 10
+jvmMetricsEnabled: True
+graphiteHost: carbon.dmz.unrecoverable.org
+graphiteRate: 10
+graphiteRateUnit: SECONDS
 #channelReplyWhitelist:

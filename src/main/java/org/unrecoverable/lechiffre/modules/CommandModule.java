@@ -3,11 +3,15 @@ package org.unrecoverable.lechiffre.modules;
 import java.util.LinkedList;
 import java.util.List;
 import org.apache.commons.lang3.tuple.Pair;
+import org.unrecoverable.lechiffre.Bot;
 import org.unrecoverable.lechiffre.commands.BotReply;
 import org.unrecoverable.lechiffre.commands.Commands;
 import org.unrecoverable.lechiffre.commands.ICommand;
 import org.unrecoverable.lechiffre.entities.Configuration;
 import org.unrecoverable.lechiffre.entities.IConfigurable;
+
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.SharedMetricRegistries;
 
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -36,11 +40,22 @@ public class CommandModule implements IModule, IConfigurable {
 
 	private Configuration configuration = new Configuration();
 
+	private MetricRegistry metricRegistry;
+
+	private String messagesProcessed = MetricRegistry.name("messages", "processed");
+	private String messagesProcessedRate = MetricRegistry.name("messages", "processed", "rate");
+	private String messagesPrcoessedDataRate = MetricRegistry.name("messages", "processed", "characters");
+	private String commandsProcessed = MetricRegistry.name("commands", "processed");
+	private String commandsProcessedRate = MetricRegistry.name("commands", "processed", "rate");
+	private String messagesReply = MetricRegistry.name("messages", "replies");
+	private String messagesReplyDataRate = MetricRegistry.name("messages", "replies", "characters");
+	
 	public CommandModule() {
 	}
 
 	@Override
 	public boolean enable(IDiscordClient client) {
+		metricRegistry = SharedMetricRegistries.getOrCreate(Bot.METRIC_REGISTRY_NAME);
 		return true;
 	}
 
@@ -81,7 +96,10 @@ public class CommandModule implements IModule, IConfigurable {
 	@EventSubscriber
 	public void handleMessageReceived(MessageReceivedEvent event) {
 		try {
+			metricRegistry.counter(messagesProcessed).inc();
+			metricRegistry.meter(messagesProcessedRate).mark();
 			final IMessage lMessage = event.getMessage();
+			metricRegistry.meter(messagesPrcoessedDataRate).mark(lMessage.getContent().length());
 			final IUser lAuthor = lMessage.getAuthor();
 			final IDiscordClient lClient = event.getClient();
 			final IChannel lChannel = lMessage.getChannel();
@@ -93,10 +111,18 @@ public class CommandModule implements IModule, IConfigurable {
 				case CHANNEL:
 					if (configuration.getChannelReplyWhitelist().contains(lChannel.getName())) {
 						lChannel.sendMessage(lReply.getRight());
+						if (lReply.getRight() != null) {
+							metricRegistry.counter(messagesReply).inc();
+							metricRegistry.meter(messagesReplyDataRate).mark(lReply.getRight().length());
+						}
 						break;
 					}
 				case PM:
 					lPrivateChannel.sendMessage(lReply.getRight());
+					if (lReply.getRight() != null) {
+						metricRegistry.meter(messagesReply).mark();
+						metricRegistry.meter(messagesReplyDataRate).mark(lReply.getRight().length());
+					}
 					break;
 				case NONE:
 				default:
@@ -133,6 +159,8 @@ public class CommandModule implements IModule, IConfigurable {
 						// TODO need to add a set of permissions checking based on user ID or something
 						lResponse = lCommand.handle(message);
 					}
+					metricRegistry.counter(commandsProcessed).inc();
+					metricRegistry.meter(commandsProcessedRate).mark();
 					break;
 				}
 			}

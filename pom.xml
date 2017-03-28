@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.unrecoverable</groupId>
 	<artifactId>lechiffre</artifactId>
-	<version>0.1.0</version>
+	<version>0.2.0</version>
 	<name>Le Chiffre</name>
 	<description>Stats Bot for Discord</description>
 	
@@ -74,7 +74,22 @@
 			<artifactId>jfreechart</artifactId>
 			<version>1.0.13</version>
 		</dependency>
-	</dependencies>
+	    <dependency>
+	        <groupId>io.dropwizard.metrics</groupId>
+	        <artifactId>metrics-core</artifactId>
+	        <version>3.1.0</version>
+	    </dependency>
+	    <dependency>
+	        <groupId>io.dropwizard.metrics</groupId>
+	        <artifactId>metrics-jvm</artifactId>
+	        <version>3.1.0</version>
+	    </dependency>
+	    <dependency>
+	        <groupId>io.dropwizard.metrics</groupId>
+	        <artifactId>metrics-graphite</artifactId>
+	        <version>3.1.0</version>
+	    </dependency>
+   	</dependencies>
 
 	<build>
 		<plugins>

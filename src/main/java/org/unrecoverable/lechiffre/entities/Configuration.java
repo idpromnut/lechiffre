@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import org.unrecoverable.lechiffre.commands.Commands;
 import org.unrecoverable.lechiffre.commands.ICommand;
@@ -45,7 +46,19 @@ public class Configuration {
 	private String dataDirectoryPath = ".";
 
 	private int statsSavePeriodMinutes = 10;
+	
+	private boolean jvmMetricsEnabled = false;
 
+	private String metricPrefix;
+	
+	private String graphiteHost;
+	
+	private int graphitePort = 2003;
+
+	private int graphiteRate = 60;
+	
+	private TimeUnit graphiteRateUnit = TimeUnit.SECONDS;
+	
 	private List<String> channelReplyWhitelist = new ArrayList<>();
 
 	public Configuration() {
