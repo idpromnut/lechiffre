@@ -32,6 +32,11 @@ public class Configuration {
 	private String ownerId;
 
 	/**
+	 * Set the command string/character that must prefix all commands to lechiffre
+	 */
+	private String commandPrefix;
+	
+	/**
 	 * Channel to publish informational messages to (greetings for example).
 	 */
 	private String infoChannel;
@@ -75,7 +80,7 @@ public class Configuration {
 			for (IRole lRole : user.getRolesForGuild(guild)) {
 				if (roleToCommandPermissions.containsKey(lRole.getName())) {
 					lAllowedCommands = roleToCommandPermissions.get(lRole.getName());
-					if (lAllowedCommands.contains(command.getCommand())) {
+					if (lAllowedCommands != null && lAllowedCommands.contains(command.getCommand())) {
 						lHasPermission = true;
 						break;
 					}

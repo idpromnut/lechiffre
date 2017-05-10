@@ -23,7 +23,7 @@ public class TextChannelStatsCommand extends ChannelStatsCommand {
 	@Override
 	public String getHelp() {
 		return String.format("prints stats for a specific text channel (i.e.: %s%s<channel name>). Answer will be sent as a PM.",
-				Commands.CMD_PREFIX, getCommand());
+				Commands.getCommandPrefix(), getCommand());
 	}
 
 	@Override

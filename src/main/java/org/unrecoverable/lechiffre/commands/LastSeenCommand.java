@@ -44,19 +44,24 @@ public class LastSeenCommand extends BaseStatsCommand implements ICommand {
 
 		final String lContent = message.getContent();
 		final String[] lChoppedContent = StringUtils.split(lContent, " ");
-		final String lUsername = lChoppedContent[1];
-		String lLastSeenString = "I don't know anything about " + lUsername;
-		User lUser = searchForUser(lUsername);
-		if (lUser != null) {
-			UserStats lStats = findUserStats(lUser);
-			if (lStats != null) {
-				log.info("Printing stats for user {}", lUsername);
-				if (lStats.getPresence().getLastActivity() != null) {
-					lLastSeenString = String.format("%s was last seen on %s", lUser.getName(),
-							dateTimeFormatter.format(lStats.getPresence().getLastActivity()));
+		String lLastSeenString = "Missing user name! Hint: " + getHelp();
+		
+		if (lChoppedContent != null && lChoppedContent.length > 1) {
+			final String lUsername = lChoppedContent[1];
+			lLastSeenString = "I don't know anything about " + lUsername;
+			User lUser = searchForUser(lUsername);
+			if (lUser != null) {
+				UserStats lStats = findUserStats(lUser);
+				if (lStats != null) {
+					log.info("Printing stats for user {}", lUsername);
+					if (lStats.getPresence().getLastActivity() != null) {
+						lLastSeenString = String.format("%s was last seen on %s", lUser.getName(),
+								dateTimeFormatter.format(lStats.getPresence().getLastActivity()));
+					}
 				}
 			}
 		}
+		
 		return Pair.of(BotReply.CHANNEL, lLastSeenString);
 	}
 

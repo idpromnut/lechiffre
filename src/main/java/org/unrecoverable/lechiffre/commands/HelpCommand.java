@@ -84,7 +84,7 @@ public class HelpCommand implements ICommand, IConfigurable {
 
 	private String getFormattedCommandHelpString(final ICommand command) {
 		return String.format("**%s%s -** %s %s\n",
-				Commands.CMD_PREFIX,
+				Commands.getCommandPrefix(),
 				command.getCommand(),
 				command.getHelp(),
 				(command.isGuildCommand() ? "(channel command)" : ""));

@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.unrecoverable</groupId>
 	<artifactId>lechiffre</artifactId>
-	<version>0.2.0</version>
+	<version>1.0.0</version>
 	<name>Le Chiffre</name>
 	<description>Stats Bot for Discord</description>
 	

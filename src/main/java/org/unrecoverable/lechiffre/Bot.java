@@ -22,6 +22,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.unrecoverable.lechiffre.commands.UserStatsCommand;
 import org.unrecoverable.lechiffre.commands.VoiceChannelStatsCommand;
 import org.unrecoverable.lechiffre.commands.TextChannelStatsCommand;
+import org.unrecoverable.lechiffre.commands.Commands;
 import org.unrecoverable.lechiffre.commands.GuildStatsCommand;
 import org.unrecoverable.lechiffre.commands.HelpCommand;
 import org.unrecoverable.lechiffre.commands.ICommand;
@@ -118,6 +119,11 @@ public class Bot {
 
 		if (StringUtils.isBlank(lBotToken)) {
 			throw new IllegalStateException("no botToken provided (either on the command line or in the configuration file); exiting");
+		}
+		
+		// configure command prefix
+		if (StringUtils.isNotBlank(configuration.getCommandPrefix())) {
+			Commands.setCommandPrefix(configuration.getCommandPrefix());
 		}
 
 		configureMetrics(configuration);

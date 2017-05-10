@@ -145,10 +145,10 @@ public class CommandModule implements IModule, IConfigurable {
 
 			// define the "unknown command" response
 			lResponse = Pair.of(BotReply.PM,
-					"I don't know what you would like me to do, may I suggest you '" + Commands.CMD_PREFIX + Commands.CMD_HELP + "' yourself.");
+					"I don't know what you would like me to do, may I suggest you '" + Commands.getCommandPrefix() + Commands.CMD_HELP + "' yourself.");
 
 			for (ICommand lCommand : commandChain) {
-				if (message.getContent().startsWith(Commands.CMD_PREFIX + lCommand.getCommand())) {
+				if (message.getContent().startsWith(Commands.getCommandPrefix() + lCommand.getCommand())) {
 
 					// check if this command requires a permissions check (the guild is available)
 					if (lCommand.isGuildCommand() ) {
@@ -182,7 +182,7 @@ public class CommandModule implements IModule, IConfigurable {
 			lResponse = command.handle(message);
 		}
 		else {
-			lResponse = Pair.of(BotReply.PM, "I'm sorry, but I can't let you run the " + Commands.CMD_PREFIX + command.getCommand() + " command");
+			lResponse = Pair.of(BotReply.PM, "I'm sorry, but I can't let you run the " + Commands.getCommandPrefix() + command.getCommand() + " command");
 		}
 
 		return lResponse;

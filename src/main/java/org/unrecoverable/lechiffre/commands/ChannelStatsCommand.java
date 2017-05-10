@@ -46,7 +46,7 @@ public abstract class ChannelStatsCommand extends BaseStatsCommand implements IC
 	@Override
 	public Pair<BotReply, String> handle(IMessage message) {
 
-		final String lRequestedChannelName = message.getContent().replace(Commands.CMD_PREFIX + getCommand(), "");
+		final String lRequestedChannelName = message.getContent().replace(Commands.getCommandPrefix() + getCommand(), "");
 		final IUser lAuthor = message.getAuthor();
 		final IChannel lSourceChannel = message.getChannel();
 		final IGuild lSourceGuild = lSourceChannel.getGuild();
@@ -64,6 +64,8 @@ public abstract class ChannelStatsCommand extends BaseStatsCommand implements IC
 		if (lDmChannel != null) {
 			// was a name of some sort provided?
 			if (StringUtils.isNotBlank(lRequestedChannelName)) {
+				
+				log.trace("{} asks for channel stats for {} (if missing from your config", lAuthor.getName(), lRequestedChannelName);
 
 				// prep message if we didn't find anything in our stats object
 				lBotReply = BotReply.PM;

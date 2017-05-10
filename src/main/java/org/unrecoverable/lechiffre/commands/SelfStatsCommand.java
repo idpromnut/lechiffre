@@ -17,7 +17,7 @@ public class SelfStatsCommand extends UserStatsCommand {
 
 	@Override
 	public String getHelp() {
-		return "returns your stats (ex: " + Commands.CMD_PREFIX + Commands.CMD_SKILLZ + "). PMing the command to me will result in extra info being PM'd back to you.";
+		return "returns your stats (ex: " + Commands.getCommandPrefix() + Commands.CMD_SKILLZ + "). PMing the command to me will result in extra info being PM'd back to you.";
 	}
 
 	@Override

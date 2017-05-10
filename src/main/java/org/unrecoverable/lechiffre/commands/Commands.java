@@ -5,7 +5,9 @@ import java.util.List;
 
 public final class Commands {
 
-	public static final String CMD_PREFIX = "!";
+	private static final String DEFAULT_CMD_PREFIX = "!";
+	
+	private static String cmdPrefix = DEFAULT_CMD_PREFIX;
 
 	public static final String CMD_STATS = "stats";
 
@@ -29,7 +31,15 @@ public final class Commands {
 
 
 	public static boolean isCommand(String input) {
-		return (input != null && input.startsWith(CMD_PREFIX));
+		return (input != null && input.startsWith(getCommandPrefix()));
+	}
+	
+	public static String getCommandPrefix() {
+		return cmdPrefix;
+	}
+	
+	public static void setCommandPrefix(String prefix) {
+		cmdPrefix = prefix;
 	}
 
 	public static List<String> getCommands() {
