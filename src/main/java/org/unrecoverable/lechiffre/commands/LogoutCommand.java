@@ -59,7 +59,7 @@ public class LogoutCommand implements ICommand {
 					LOGGER.debug("error while sending courtesy logout message to {}", lAuthor.getName(), e1);
 				}
 				LOGGER.info("{} asked us to bugger off, {} over and OUT!", lAuthor.getName(), lClient.getOurUser().getName());
-				lClient.changePresence(true);
+				lClient.idle();
 				executePreLogoutCommands(message);
 				lClient.logout();
 				LOGGER.info("Logged out");

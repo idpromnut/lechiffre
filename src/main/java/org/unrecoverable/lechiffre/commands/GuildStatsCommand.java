@@ -5,7 +5,7 @@ import org.unrecoverable.lechiffre.entities.GuildStats;
 import sx.blah.discord.handle.obj.IGuild;
 import sx.blah.discord.handle.obj.IMessage;
 import sx.blah.discord.handle.obj.IUser;
-import sx.blah.discord.handle.obj.Presences;
+import sx.blah.discord.handle.obj.StatusType;
 
 public class GuildStatsCommand extends BaseStatsCommand implements ICommand, IStatsCommand {
 
@@ -55,7 +55,7 @@ public class GuildStatsCommand extends BaseStatsCommand implements ICommand, ISt
 	public int getOnlineUsers(final IGuild guild) {
 		int lOnlineUsers = 0;
 		for(IUser lUser: guild.getUsers()) {
-			if (Presences.ONLINE.equals(lUser.getPresence())) {
+			if (StatusType.ONLINE.equals(lUser.getPresence().getStatus())) {
 				++lOnlineUsers;
 			}
 		}

@@ -17,22 +17,21 @@ import org.unrecoverable.lechiffre.stats.HourlyBinnedStatistic;
 import lombok.extern.slf4j.Slf4j;
 import sx.blah.discord.api.IDiscordClient;
 import sx.blah.discord.api.events.EventSubscriber;
-import sx.blah.discord.handle.impl.events.ChannelCreateEvent;
-import sx.blah.discord.handle.impl.events.MessageReceivedEvent;
-import sx.blah.discord.handle.impl.events.PresenceUpdateEvent;
 import sx.blah.discord.handle.impl.events.ReadyEvent;
-import sx.blah.discord.handle.impl.events.StatusChangeEvent;
-import sx.blah.discord.handle.impl.events.TypingEvent;
-import sx.blah.discord.handle.impl.events.UserJoinEvent;
-import sx.blah.discord.handle.impl.events.UserLeaveEvent;
-import sx.blah.discord.handle.impl.events.UserVoiceChannelJoinEvent;
-import sx.blah.discord.handle.impl.events.VoiceChannelCreateEvent;
+import sx.blah.discord.handle.impl.events.guild.channel.ChannelCreateEvent;
+import sx.blah.discord.handle.impl.events.guild.channel.TypingEvent;
+import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedEvent;
+import sx.blah.discord.handle.impl.events.guild.member.UserJoinEvent;
+import sx.blah.discord.handle.impl.events.guild.member.UserLeaveEvent;
+import sx.blah.discord.handle.impl.events.guild.voice.VoiceChannelCreateEvent;
+import sx.blah.discord.handle.impl.events.guild.voice.user.UserVoiceChannelJoinEvent;
+import sx.blah.discord.handle.impl.events.user.PresenceUpdateEvent;
 import sx.blah.discord.handle.obj.IChannel;
 import sx.blah.discord.handle.obj.IGuild;
 import sx.blah.discord.handle.obj.IMessage;
 import sx.blah.discord.handle.obj.IUser;
 import sx.blah.discord.handle.obj.IVoiceChannel;
-import sx.blah.discord.handle.obj.Presences;
+import sx.blah.discord.handle.obj.StatusType;
 import sx.blah.discord.modules.IModule;
 
 /**
@@ -98,13 +97,13 @@ public class StatsModule implements IModule {
 		}
 		
 		for(IChannel lChannel: guild.getChannels()) {
-			if (stats.getChannelStats(lChannel.getID()) == null) {
-				stats.addChannel(new Channel(lChannel.getID(), lChannel.getName(), false), new ChannelStats());
+			if (stats.getChannelStats(lChannel.getStringID()) == null) {
+				stats.addChannel(new Channel(lChannel.getStringID(), lChannel.getName(), false), new ChannelStats());
 			}
 		}
 		for(IChannel lChannel: guild.getVoiceChannels()) {
-			if (stats.getChannelStats(lChannel.getID()) == null) {
-				stats.addChannel(new Channel(lChannel.getID(), lChannel.getName(), true), new ChannelStats());
+			if (stats.getChannelStats(lChannel.getStringID()) == null) {
+				stats.addChannel(new Channel(lChannel.getStringID(), lChannel.getName(), true), new ChannelStats());
 			}
 		}
 	}
@@ -161,13 +160,14 @@ public class StatsModule implements IModule {
 	@EventSubscriber
 	public void handlePresenceUpdatedEvent(PresenceUpdateEvent event) {
 		final IUser lUser = event.getUser();
-		if (event.getNewPresence() == Presences.ONLINE || event.getNewPresence() == Presences.STREAMING) {
+		if (event != null && event.getNewPresence() != null && 
+				(event.getNewPresence().getStatus() == StatusType.ONLINE || event.getNewPresence().getStatus() == StatusType.STREAMING)) {
 			updateUserStatsForAllTrackedGuilds(lUser);
 		}
 	}
 
 	@EventSubscriber
-	public void handleStatusChangeEvent(StatusChangeEvent event) {
+	public void handleStatusChangeEvent(PresenceUpdateEvent event) {
 		final IUser lUser = event.getUser();
 		updateUserStatsForAllTrackedGuilds(lUser);
 	}
@@ -182,7 +182,7 @@ public class StatsModule implements IModule {
 	@EventSubscriber
 	public void handleUserVoiceChannelJoinEvent(UserVoiceChannelJoinEvent event) {
 		final IUser lUser = event.getUser();
-		final IChannel lChannel = event.getChannel();
+		final IChannel lChannel = event.getVoiceChannel();
 		updateUserStatsWithChannel(lUser, lChannel);
 	}
 	
@@ -196,9 +196,9 @@ public class StatsModule implements IModule {
 	
 	@EventSubscriber
 	public void handleVoiceChannelCreateEvent(VoiceChannelCreateEvent event) {
-		final IChannel lChannel = event.getChannel();
+		final IChannel lChannel = event.getVoiceChannel();
 		if (isTrackableChannel(lChannel)) {
-			lookupChannelStats(event.getChannel(), event.getChannel().getGuild());
+			lookupChannelStats(event.getVoiceChannel(), event.getVoiceChannel().getGuild());
 		}
 	}
 
@@ -210,7 +210,7 @@ public class StatsModule implements IModule {
 	}
 	
 	private boolean isBotUser(final IUser user) {
-		return ( user != null && client.getOurUser().getID().equals( user.getID() ) );
+		return ( user != null && client.getOurUser().getStringID().equals( user.getStringID() ) );
 	}
 	
 	private boolean isTrackableChannel(final IChannel channel) {
@@ -224,7 +224,7 @@ public class StatsModule implements IModule {
 	
 	private void updateUserStatsForAllTrackedGuilds(final IUser user) {
 		for(Map.Entry<IGuild, GuildStats> lStatsTuple: guildStatsMap.entrySet()) {
-			if (lStatsTuple.getValue().isTrackedUser(user.getID())) {
+			if (lStatsTuple.getValue().isTrackedUser(user.getStringID())) {
 				updateUserStatsForGuild(user, lStatsTuple.getKey());
 			}
 		}
@@ -245,11 +245,11 @@ public class StatsModule implements IModule {
 		GuildStats lGuildStats = guildStatsMap.get(guild);
 		if (lGuildStats == null) {
 			// We have a problem right away as we should have got a guild tracking update.
-			throw new MissingGuildException("guild " + guild.getName() + "(" + guild.getID() + ") is unknown");
+			throw new MissingGuildException("guild " + guild.getName() + "(" + guild.getStringID() + ") is unknown");
 		}
 		
-		if (lGuildStats.isTrackedUser(user.getID())) {
-			lUserStats = lGuildStats.getUserStats(user.getID());
+		if (lGuildStats.isTrackedUser(user.getStringID())) {
+			lUserStats = lGuildStats.getUserStats(user.getStringID());
 		}
 		else {
 			lUserStats = trackUser(user, lGuildStats);
@@ -267,9 +267,9 @@ public class StatsModule implements IModule {
 			UserStats lUserStats = lookupUserStats(user, lGuild);
 			if (lUserStats != null) {
 				lMessagesAuthored = lUserStats.getMessagesAuthored().incrementAndGet();
-				HourlyBinnedStatistic lChannelMessageStats = lUserStats.getChannelHourlyBinnedStatById(lChannel.getID());
+				HourlyBinnedStatistic lChannelMessageStats = lUserStats.getChannelHourlyBinnedStatById(lChannel.getStringID());
 				if (lChannelMessageStats == null) {
-					lChannelMessageStats = lUserStats.trackChannel(lChannel.getID());
+					lChannelMessageStats = lUserStats.trackChannel(lChannel.getStringID());
 				}
 				lChannelMessageStats.mark(message.getCreationDate().atZone(zone));
 				log.debug("Authored message count updated for {} [{}]", user.getName(), lMessagesAuthored);
@@ -296,12 +296,12 @@ public class StatsModule implements IModule {
 		GuildStats lGuildStats = guildStatsMap.get(guild);
 
 		if (lGuildStats != null) {
-			if (lGuildStats.isTrackedChannel(channel.getID())) {
-				lChannelStats = lGuildStats.getChannelStats(channel.getID());
+			if (lGuildStats.isTrackedChannel(channel.getStringID())) {
+				lChannelStats = lGuildStats.getChannelStats(channel.getStringID());
 			}
 			else {
 				lChannelStats = new ChannelStats();
-				Channel lChannel = new Channel(channel.getID(), channel.getName(), (channel instanceof IVoiceChannel));
+				Channel lChannel = new Channel(channel.getStringID(), channel.getName(), (channel instanceof IVoiceChannel));
 				lGuildStats.addChannel(lChannel, lChannelStats);
 				log.info("Added {} to list of tracked channels in {}", channel.getName(), guild.getName());
 			}
@@ -328,7 +328,7 @@ public class StatsModule implements IModule {
 	
 	private UserStats trackUser(IUser user, GuildStats guildStats) {
 		UserStats lUserStats = new UserStats();
-		User lUser = new User(user.getID(), user.getName(), user.getDiscriminator());
+		User lUser = new User(user.getStringID(), user.getName(), user.getDiscriminator());
 		guildStats.addUser(lUser, lUserStats);
 		log.info("{}'s presence is now being tracked", user.getName());
 		return lUserStats;

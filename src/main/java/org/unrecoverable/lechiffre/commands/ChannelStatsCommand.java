@@ -73,7 +73,7 @@ public abstract class ChannelStatsCommand extends BaseStatsCommand implements IC
 
 				for(IChannel lChannel: getChannels(lClient)) {
 					if (lChannel.getName().startsWith(lRequestedChannelName)) {
-						ChannelStats lChannelStats = findChannelStats(lChannel.getID());
+						ChannelStats lChannelStats = findChannelStats(lChannel.getStringID());
 						if (lChannelStats != null) {
 							publishChannelMessageActivityChart(lChannel, lChannelStats, lDmChannel);
 						}
@@ -91,7 +91,7 @@ public abstract class ChannelStatsCommand extends BaseStatsCommand implements IC
 				Map<IChannel, ChannelStats> lChannelStatsMap = new HashMap<>();
 				GuildStats lGuildStats = getGuildStatsMap().get(lSourceGuild);
 				for(IChannel lChannel: getChannelsForGuild(lClient, lGuildStats)) {
-					lChannelStatsMap.put(lChannel, lGuildStats.getChannelStats(lChannel.getID()));
+					lChannelStatsMap.put(lChannel, lGuildStats.getChannelStats(lChannel.getStringID()));
 				}
 				publishChannelsMessageActivityChart(lChannelStatsMap, lSourceGuild.getName(), lDmChannel);
 			}
@@ -110,7 +110,7 @@ public abstract class ChannelStatsCommand extends BaseStatsCommand implements IC
 
 		List<IChannel> lGuildChannels = new ArrayList<>();
 		for(IChannel lChannel: getChannels(client)) {
-			if (guildStats.isTrackedChannel(lChannel.getID())) {
+			if (guildStats.isTrackedChannel(lChannel.getStringID())) {
 				lGuildChannels.add(lChannel);
 			}
 		}
@@ -162,7 +162,7 @@ public abstract class ChannelStatsCommand extends BaseStatsCommand implements IC
 	protected void sendChartToChannel(final JFreeChart chart, final IChannel channel, final String filename) {
 		try {
 			ByteArrayInputStream lChartData = new ByteArrayInputStream(ChartUtilities.encodeAsPNG(chart.createBufferedImage(1600, 800)));
-			channel.sendFile(lChartData, filename);
+			channel.sendFile(filename, lChartData, filename);
 		} catch (IOException | MissingPermissionsException | RateLimitException | DiscordException e ) {
 			log.error("could not generate chart", e);
 		}

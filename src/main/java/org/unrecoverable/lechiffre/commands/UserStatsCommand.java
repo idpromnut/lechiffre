@@ -96,7 +96,7 @@ public class UserStatsCommand extends BaseStatsCommand implements ICommand {
 
 		try {
 			ByteArrayInputStream lChartData = new ByteArrayInputStream(ChartUtilities.encodeAsPNG(lChart.createBufferedImage(1600, 800)));
-			channel.sendFile(lChartData, "activities-chart.png");
+			channel.sendFile("activities-chart.png", lChartData, "activities-chart.png");
 		} catch (IOException | MissingPermissionsException | RateLimitException | DiscordException e ) {
 			log.error("could not generate chart", e);
 		}
