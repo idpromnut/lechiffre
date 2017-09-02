@@ -47,8 +47,7 @@ public class Configuration {
 	@NonNull
 	private Map<String, List<String>> roleToCommandPermissions = new HashMap<>();
 
-	@NonNull
-	private String dataDirectoryPath = ".";
+	private String dataDirectoryPath;
 
 	private int statsSavePeriodMinutes = 10;
 	

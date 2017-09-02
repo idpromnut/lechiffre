@@ -146,8 +146,8 @@
 										<maxMemorySize>128M</maxMemorySize>
 										<maxStackSize>96M</maxStackSize>
 										<extraArguments>
-											<extraArgument>-Dlogback.configurationFile=etc\\logback.xml</extraArgument>
-											<extraArgument>-Dhome.dir=..\\lechiffre-home</extraArgument>
+											<extraArgument>-Dlogback.configurationFile=etc/logback.xml</extraArgument>
+											<extraArgument>-Dhome.dir=../lechiffre-home</extraArgument>
 										</extraArguments>
 									</jvmSettings>
 									<generatorConfigurations>
