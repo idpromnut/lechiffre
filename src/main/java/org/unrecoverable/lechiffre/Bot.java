@@ -54,6 +54,7 @@ import com.codahale.metrics.jvm.GarbageCollectorMetricSet;
 import com.codahale.metrics.jvm.MemoryUsageGaugeSet;
 import com.codahale.metrics.jvm.ThreadStatesGaugeSet;
 
+import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import sx.blah.discord.api.ClientBuilder;
@@ -72,6 +73,8 @@ import sx.blah.discord.util.DiscordException;
 @Slf4j
 public class Bot {
 
+	public static final String HOME_DIRECTORY = "home.dir";
+	
 	public static final String METRIC_REGISTRY_NAME = "bot";
 
 	private static final JsonSerializer JSON_SERIALIZER = new JsonSerializer();
@@ -81,6 +84,11 @@ public class Bot {
 	private StatsModule statsModule = new StatsModule();
 	private CommandModule commandModule = new CommandModule();
 	private List<ICommand> commands = new LinkedList<>();
+	
+	@Getter @Setter
+	private File homeDirectory = new File(".");
+	
+	private File configurationDirectory = new File("etc");
 
 	@Setter
 	private org.unrecoverable.lechiffre.entities.Configuration configuration;
@@ -98,9 +106,15 @@ public class Bot {
 			lBotToken = args[0];
 			log.info("Using token configured on command line: {}", lBotToken);
 		}
-
+		
 		Bot lBot = new Bot();
 		try {
+			if (System.getProperties().containsKey(HOME_DIRECTORY)) {
+				File homeDir = new File(System.getProperty(HOME_DIRECTORY));
+				lBot.setHomeDirectory(homeDir);
+				log.info("Using properties configured home directory for configuration: {}", homeDir.getCanonicalPath());
+			}
+
 			lBot.startBot(lBotToken);
 		}
 		catch (Exception e) {
@@ -113,12 +127,20 @@ public class Bot {
 		if (!Configuration.AUTOMATICALLY_ENABLE_MODULES || !Configuration.LOAD_EXTERNAL_MODULES)
 			throw new RuntimeException("Invalid configuration!");
 
+		configurationDirectory = new File(homeDirectory, "etc");
+		
 		// load config
-		configuration = loadConfiguration("etc/config.yml");
+		configuration = loadConfiguration(configurationDirectory, "config.yml");
 		String lBotToken = StringUtils.isNotBlank(botToken) ? botToken : configuration.getBotToken();
 
 		if (StringUtils.isBlank(lBotToken)) {
 			throw new IllegalStateException("no botToken provided (either on the command line or in the configuration file); exiting");
+		}
+		
+		// set data directory to home directory if not set
+		if (StringUtils.isBlank(configuration.getDataDirectoryPath())) {
+			configuration.setDataDirectoryPath(homeDirectory.getAbsolutePath());
+			log.info("Data directory not set in configuration file, setting to home directory: {}", homeDirectory.getAbsolutePath());
 		}
 		
 		// configure command prefix
@@ -241,13 +263,13 @@ public class Bot {
 		// The modules should handle the rest
 	}
 	
-	private org.unrecoverable.lechiffre.entities.Configuration loadConfiguration(final String configurationFileName) {
+	private org.unrecoverable.lechiffre.entities.Configuration loadConfiguration(final File directory, final String configurationFileName) {
 		
 		// load in configuration
 		Reader lConfigReader = null;
 		org.unrecoverable.lechiffre.entities.Configuration lConfiguration = null;
 		Yaml readerYaml = new Yaml(new Constructor(org.unrecoverable.lechiffre.entities.Configuration.class));
-		File lConfigFile = new File(configurationFileName);
+		File lConfigFile = new File(directory, configurationFileName);
 		try {
 			lConfigReader = new FileReader(lConfigFile);
 			lConfiguration = (org.unrecoverable.lechiffre.entities.Configuration) readerYaml.load(lConfigReader);
@@ -255,6 +277,7 @@ public class Bot {
 		} catch (FileNotFoundException e1) {
 			log.error("could not load configuration from {}", lConfigFile, e1);
 			lConfiguration = new org.unrecoverable.lechiffre.entities.Configuration();
+			log.info("Using default configuration: {}", lConfiguration);
 		}
 		finally {
 			IOUtils.closeQuietly(lConfigReader);

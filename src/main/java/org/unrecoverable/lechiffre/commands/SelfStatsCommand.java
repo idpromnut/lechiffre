@@ -1,5 +1,7 @@
 package org.unrecoverable.lechiffre.commands;
 
+import java.util.List;
+
 import org.apache.commons.lang3.tuple.Pair;
 import org.unrecoverable.lechiffre.entities.User;
 import sx.blah.discord.handle.obj.IMessage;
@@ -29,9 +31,9 @@ public class SelfStatsCommand extends UserStatsCommand {
 	public Pair<BotReply, String> handle(IMessage message) {
 		final IUser lAuthor = message.getAuthor();
 		if (lAuthor != null) {
-			User lUser = searchForUser(lAuthor.getName());
-			if (message.getChannel().isPrivate() && lUser != null) {
-				pushUserActivityChart(lUser, findUserStats(lUser), message.getChannel());
+			List<User> lUsers = searchForUser(lAuthor.getName());
+			if (message.getChannel().isPrivate() && lUsers.size() == 1) {
+				pushUserActivityChart(lUsers.get(0), findUserStats(lUsers.get(0)), message.getChannel());
 			}
 			return Pair.of(BotReply.CHANNEL, getStatsForUser(lAuthor.getName()));
 		}

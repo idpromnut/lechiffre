@@ -75,7 +75,10 @@ public class Configuration {
 	public boolean userHasPermission(final IUser user, final IGuild guild, final ICommand command) {
 		boolean lHasPermission = false;
 
-		if (roleToCommandPermissions != null) {
+		if (ownerId != null && ownerId.equals(user.getStringID())) {
+			lHasPermission = true;
+		}
+		else if (roleToCommandPermissions != null) {
 			List<String> lAllowedCommands;
 			for (IRole lRole : user.getRolesForGuild(guild)) {
 				if (roleToCommandPermissions.containsKey(lRole.getName())) {
