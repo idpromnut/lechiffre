@@ -22,3 +22,5 @@ graphiteHost:
 graphiteRate: 10
 graphiteRateUnit: SECONDS
 #channelReplyWhitelist:
+guildWhitelist:
+  - 

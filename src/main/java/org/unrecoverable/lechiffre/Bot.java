@@ -174,7 +174,13 @@ public class Bot {
 		File lGreetingsFile = new File("etc/welcome.txt");
 		BufferedReader lGreetingMessageReader = null;
 		try {
-			lGreetingMessageReader = new BufferedReader(new FileReader(lGreetingsFile));
+			if (new File(homeDirectory, lGreetingsFile.getCanonicalPath()).exists()) {
+				lGreetingMessageReader = new BufferedReader(new FileReader(new File(homeDirectory, lGreetingsFile.getCanonicalPath())));
+				log.debug("using welcome.txt file from {}", new File(homeDirectory, lGreetingsFile.getCanonicalPath()));
+			}
+			else {
+				lGreetingMessageReader = new BufferedReader(new FileReader(lGreetingsFile));
+			}
 			List<String> lGreetings = new ArrayList<>();
 			while(lGreetingMessageReader.ready()) {
 				lGreetings.add(lGreetingMessageReader.readLine());
@@ -227,26 +233,32 @@ public class Bot {
 			// add any missing guilds from our stats
 			for(IGuild lGuild: e.getClient().getGuilds()) {
 
-				GuildStats lStats;
+				// filter by guild white list
+				// if the white list is empty, allow everything
+				if (isWhitelistedGuild(lGuild)) {
+					
+					log.info("Found guild {}({}) in whitelist (or whitelist empty)", lGuild.getName(), lGuild.getStringID());
+					GuildStats lStats;
 
-				lStats = JSON_SERIALIZER.loadStats(new File(configuration.getDataDirectoryPath(), JsonSerializer.escapeStringAsFilename(lGuild.getName()) + "-stats.json"));
+					lStats = JSON_SERIALIZER.loadStats(new File(configuration.getDataDirectoryPath(), JsonSerializer.escapeStringAsFilename(lGuild.getName()) + "-stats.json"));
 
-				if (lStats != null) {
-					log.info("Guild stats for {} have been loaded from disk", lGuild.getName());
-					log.debug("Guild stats: {}", lStats);
-				}
-				else {
-					lStats = new GuildStats();
-					log.info("No previous stats found for {}", lGuild.getName());
-				}
-
-				statsModule.trackGuild(lGuild, lStats);
-				for(ICommand lCommand: commands) {
-					if (lCommand instanceof IStatsCommand) {
-						((IStatsCommand) lCommand).enableCommands(lGuild, lStats);
+					if (lStats != null) {
+						log.info("Guild stats for {} have been loaded from disk", lGuild.getName());
+						log.debug("Guild stats: {}", lStats);
 					}
+					else {
+						lStats = new GuildStats();
+						log.info("No previous stats found for {}", lGuild.getName());
+					}
+
+					statsModule.trackGuild(lGuild, lStats);
+					for(ICommand lCommand: commands) {
+						if (lCommand instanceof IStatsCommand) {
+							((IStatsCommand) lCommand).enableCommands(lGuild, lStats);
+						}
+					}
+					log.info("Member of guild: {}, tracking stats for guild", lGuild.getName());
 				}
-				log.info("Member of guild: {}, tracking stats for guild", lGuild.getName());
 			}
 		});
 
@@ -265,6 +277,20 @@ public class Bot {
 		// The modules should handle the rest
 	}
 	
+	private boolean isWhitelistedGuild(final IGuild guild) {
+		boolean allowed = false;
+		for(String value: configuration.getGuildWhitelist()) {
+			if (value != null && (
+				value.equalsIgnoreCase(guild.getStringID()) ||
+				value.equalsIgnoreCase(guild.getName()) ) ) {
+
+				allowed = true;
+				break;
+			}
+		}
+		return allowed || configuration.getGuildWhitelist().isEmpty();
+	}
+
 	private org.unrecoverable.lechiffre.entities.Configuration loadConfiguration(final File directory, final String configurationFileName) {
 		
 		// load in configuration

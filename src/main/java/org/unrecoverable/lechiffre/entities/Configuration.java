@@ -64,6 +64,8 @@ public class Configuration {
 	private TimeUnit graphiteRateUnit = TimeUnit.SECONDS;
 	
 	private List<String> channelReplyWhitelist = new ArrayList<>();
+	
+	private List<String> guildWhitelist = new ArrayList<>();
 
 	public Configuration() {
 
