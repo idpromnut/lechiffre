@@ -22,6 +22,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.unrecoverable.lechiffre.commands.UserStatsCommand;
 import org.unrecoverable.lechiffre.commands.VoiceChannelStatsCommand;
 import org.unrecoverable.lechiffre.commands.TextChannelStatsCommand;
+import org.unrecoverable.lechiffre.commands.AdminCommand;
 import org.unrecoverable.lechiffre.commands.Commands;
 import org.unrecoverable.lechiffre.commands.GuildStatsCommand;
 import org.unrecoverable.lechiffre.commands.HelpCommand;
@@ -162,6 +163,7 @@ public class Bot {
 		commands.add(new SelfStatsCommand());
 		commands.add(new TextChannelStatsCommand());
 		commands.add(new VoiceChannelStatsCommand());
+		commands.add(new AdminCommand());
 
 		// create the help command using all the previously defined commands
 		HelpCommand lHelpCommand = new HelpCommand(commands);

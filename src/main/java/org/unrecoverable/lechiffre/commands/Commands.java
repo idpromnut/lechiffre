@@ -28,6 +28,10 @@ public final class Commands {
 	public static final String CMD_VOICE_CHANNEL_STATS = "voicestats";
 
 	public static final String CMD_MOST_ACTIVE_STATS = "mostactive";
+	
+	public static final String CMD_STATS_ADMIN = "statsadmin";
+	
+	public static final String CMD_ADMIN = "admin";
 
 
 	public static boolean isCommand(String input) {
@@ -43,16 +47,18 @@ public final class Commands {
 	}
 
 	public static List<String> getCommands() {
-		List<String> lCommands = new ArrayList<>();
-		lCommands.add(CMD_HELP);
-		lCommands.add(CMD_LAST_SEEN);
-		lCommands.add(CMD_LOGOUT);
-		lCommands.add(CMD_SAVE);
-		lCommands.add(CMD_STATS);
-		lCommands.add(CMD_GUILD_STATS);
-		lCommands.add(CMD_SKILLZ);
-		lCommands.add(CMD_TEXT_CHANNEL_STATS);
-		lCommands.add(CMD_VOICE_CHANNEL_STATS);
-		return lCommands;
+		List<String> commands = new ArrayList<>();
+		commands.add(CMD_HELP);
+		commands.add(CMD_LAST_SEEN);
+		commands.add(CMD_LOGOUT);
+		commands.add(CMD_SAVE);
+		commands.add(CMD_STATS);
+		commands.add(CMD_GUILD_STATS);
+		commands.add(CMD_SKILLZ);
+		commands.add(CMD_TEXT_CHANNEL_STATS);
+		commands.add(CMD_VOICE_CHANNEL_STATS);
+		commands.add(CMD_STATS_ADMIN);
+		commands.add(CMD_ADMIN);
+		return commands;
 	}
 }

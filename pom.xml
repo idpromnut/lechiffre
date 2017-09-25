@@ -89,7 +89,12 @@
 	        <artifactId>metrics-graphite</artifactId>
 	        <version>3.1.0</version>
 	    </dependency>
-   	</dependencies>
+	    <dependency>
+	    	<groupId>net.sf.jopt-simple</groupId>
+	    	<artifactId>jopt-simple</artifactId>
+	    	<version>5.0.3</version>
+	    </dependency>
+	</dependencies>
 
 	<build>
 		<plugins>

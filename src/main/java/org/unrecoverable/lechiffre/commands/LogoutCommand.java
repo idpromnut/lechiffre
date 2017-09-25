@@ -53,7 +53,7 @@ public class LogoutCommand implements ICommand {
 					lReplyChannel = lClient.getOrCreatePMChannel(lAuthor);
 				}
 				try {
-					lReplyChannel.sendMessage("ggez no-re biatch!11!!");
+					lReplyChannel.sendMessage("THIS IS NOT OVER, MR. BOND!");
 				} catch (Exception e1) {
 					// ignore any error as this is a "courtesy reply"
 					LOGGER.debug("error while sending courtesy logout message to {}", lAuthor.getName(), e1);
