@@ -1,15 +1,12 @@
 package org.unrecoverable.lechiffre;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.io.IOException;
 import java.io.Reader;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -24,6 +21,7 @@ import org.unrecoverable.lechiffre.commands.VoiceChannelStatsCommand;
 import org.unrecoverable.lechiffre.commands.TextChannelStatsCommand;
 import org.unrecoverable.lechiffre.commands.AdminCommand;
 import org.unrecoverable.lechiffre.commands.Commands;
+import org.unrecoverable.lechiffre.commands.DiceCommand;
 import org.unrecoverable.lechiffre.commands.GuildStatsCommand;
 import org.unrecoverable.lechiffre.commands.HelpCommand;
 import org.unrecoverable.lechiffre.commands.ICommand;
@@ -32,6 +30,7 @@ import org.unrecoverable.lechiffre.commands.LastSeenCommand;
 import org.unrecoverable.lechiffre.commands.LogoutCommand;
 import org.unrecoverable.lechiffre.commands.SaveStatsCommand;
 import org.unrecoverable.lechiffre.commands.SelfStatsCommand;
+import org.unrecoverable.lechiffre.commands.TauntCommand;
 import org.unrecoverable.lechiffre.entities.GuildStats;
 import org.unrecoverable.lechiffre.entities.JsonSerializer;
 import org.unrecoverable.lechiffre.modules.CommandModule;
@@ -85,6 +84,7 @@ public class Bot {
 	private StatsModule statsModule = new StatsModule();
 	private CommandModule commandModule = new CommandModule();
 	private List<ICommand> commands = new LinkedList<>();
+	private SaveStatsCommand saveStatsCommand;
 	
 	@Getter @Setter
 	private File homeDirectory = new File(".");
@@ -132,9 +132,9 @@ public class Bot {
 		
 		// load config
 		configuration = loadConfiguration(configurationDirectory, "config.yml");
-		String lBotToken = StringUtils.isNotBlank(botToken) ? botToken : configuration.getBotToken();
+		String foundBotToken = StringUtils.isNotBlank(botToken) ? botToken : configuration.getBotToken();
 
-		if (StringUtils.isBlank(lBotToken)) {
+		if (StringUtils.isBlank(foundBotToken)) {
 			throw new IllegalStateException("no botToken provided (either on the command line or in the configuration file); exiting");
 		}
 		
@@ -152,11 +152,11 @@ public class Bot {
 		configureMetrics(configuration);
 		
 		// create command list
-		final SaveStatsCommand lSaveStatsCommand = new SaveStatsCommand();
-		LogoutCommand lLogoutCommand = new LogoutCommand();
-		lLogoutCommand.getPreLogoutCommands().add(lSaveStatsCommand);
-		commands.add(lSaveStatsCommand);
-		commands.add(lLogoutCommand);
+		saveStatsCommand = new SaveStatsCommand();
+		LogoutCommand logoutCommand = new LogoutCommand();
+		logoutCommand.getPreLogoutCommands().add(saveStatsCommand);
+		commands.add(saveStatsCommand);
+		commands.add(logoutCommand);
 		commands.add(new UserStatsCommand());
 		commands.add(new LastSeenCommand());
 		commands.add(new GuildStatsCommand());
@@ -164,100 +164,84 @@ public class Bot {
 		commands.add(new TextChannelStatsCommand());
 		commands.add(new VoiceChannelStatsCommand());
 		commands.add(new AdminCommand());
-
+		commands.add(new DiceCommand());
+		
+		// create Taunt command
+		TauntCommand tauntCommand = new TauntCommand();
+		tauntCommand.load(homeDirectory);
+		commands.add(tauntCommand);
+		
 		// create the help command using all the previously defined commands
-		HelpCommand lHelpCommand = new HelpCommand(commands);
-		commands.add(lHelpCommand);
+		HelpCommand helpCommand = new HelpCommand(commands);
+		commands.add(helpCommand);
 		commandModule.getCommandChain().addAll(commands);
 
-		// Load and configure Greeting module
-		File lGreetingsFile = new File("etc/welcome.txt");
-		BufferedReader lGreetingMessageReader = null;
-		try {
-			if (new File(homeDirectory, lGreetingsFile.getCanonicalPath()).exists()) {
-				lGreetingMessageReader = new BufferedReader(new FileReader(new File(homeDirectory, lGreetingsFile.getCanonicalPath())));
-				log.debug("using welcome.txt file from {}", new File(homeDirectory, lGreetingsFile.getCanonicalPath()));
-			}
-			else {
-				lGreetingMessageReader = new BufferedReader(new FileReader(lGreetingsFile));
-			}
-			List<String> lGreetings = new ArrayList<>();
-			while(lGreetingMessageReader.ready()) {
-				lGreetings.add(lGreetingMessageReader.readLine());
-			}
-			greetsModule.setNewUserGreetMessages(lGreetings);
-			log.info("Loaded greetings from {}", lGreetingsFile);
-		} catch (IOException e1) {
-			log.error("could not load greetings from {}", lGreetingsFile, e1);
-		}
-		finally {
-			IOUtils.closeQuietly(lGreetingMessageReader);
-		}
-		
+		greetsModule.configure(configuration);
+		greetsModule.setTauntCommand(tauntCommand);
 		
 		// configure all modules that require it
 		commandModule.configure(configuration);
 		
 		// set up periodic stats saving thread
-		StatsSaveWorker lStatsSaveWorker = new Bot.StatsSaveWorker(configuration);
-		lStatsSaveWorker.start();
+		StatsSaveWorker statsSaveWorker = new StatsSaveWorker();
+		statsSaveWorker.start();
 
-		if (StringUtils.isBlank(lBotToken)) {
-			lBotToken = configuration.getBotToken();
-			if (StringUtils.isBlank(lBotToken)) {
+		if (StringUtils.isBlank(foundBotToken)) {
+			foundBotToken = configuration.getBotToken();
+			if (StringUtils.isBlank(foundBotToken)) {
 				log.error("No App bot user token found. Set botToken in the config file or provide the token as the first command line parameter");
 				System.exit(1);
 			}
 			else {
-				log.info("Using token configured from config file: {}", lBotToken);
+				log.info("Using token configured from config file: {}", foundBotToken);
 			}
 		}
 
 		ClientBuilder builder = new ClientBuilder();
-		final IDiscordClient client = builder.withToken(lBotToken).build();
+		final IDiscordClient client = builder.withToken(foundBotToken).build();
 
 		// register modules
-		ModuleLoader lModuleLoader = new ModuleLoader(client);
-		lModuleLoader.loadModule(statsModule);
-		lModuleLoader.loadModule(commandModule);
-		lModuleLoader.loadModule(greetsModule);
+		ModuleLoader moduleLoader = new ModuleLoader(client);
+		moduleLoader.loadModule(statsModule);
+		moduleLoader.loadModule(commandModule);
+		moduleLoader.loadModule(greetsModule);
 		
-		for(IModule lModule: lModuleLoader.getLoadedModules()) {
+		for(IModule lModule: moduleLoader.getLoadedModules()) {
 			log.info("Loaded module {} by {}, version {}", lModule.getName(), lModule.getAuthor(), lModule.getVersion());
 		}
 
 		client.getDispatcher().registerListener((IListener<ReadyEvent>) (ReadyEvent e) -> {
-			IUser lBot = e.getClient().getOurUser();
-			log.info("Logged in as {}", lBot.getName());
+			IUser bot = e.getClient().getOurUser();
+			log.info("Logged in as {}", bot.getName());
 
 			// add any missing guilds from our stats
-			for(IGuild lGuild: e.getClient().getGuilds()) {
+			for(IGuild guild: e.getClient().getGuilds()) {
 
 				// filter by guild white list
 				// if the white list is empty, allow everything
-				if (isWhitelistedGuild(lGuild)) {
+				if (isWhitelistedGuild(guild)) {
 					
-					log.info("Found guild {}({}) in whitelist (or whitelist empty)", lGuild.getName(), lGuild.getStringID());
-					GuildStats lStats;
+					log.info("Found guild {}({}) in whitelist (or whitelist empty)", guild.getName(), guild.getStringID());
+					GuildStats stats;
 
-					lStats = JSON_SERIALIZER.loadStats(new File(configuration.getDataDirectoryPath(), JsonSerializer.escapeStringAsFilename(lGuild.getName()) + "-stats.json"));
+					stats = JSON_SERIALIZER.loadStats(new File(configuration.getDataDirectoryPath(), JsonSerializer.escapeStringAsFilename(guild.getName()) + "-stats.json"));
 
-					if (lStats != null) {
-						log.info("Guild stats for {} have been loaded from disk", lGuild.getName());
-						log.debug("Guild stats: {}", lStats);
+					if (stats != null) {
+						log.info("Guild stats for {} have been loaded from disk", guild.getName());
+						log.debug("Guild stats: {}", stats);
 					}
 					else {
-						lStats = new GuildStats();
-						log.info("No previous stats found for {}", lGuild.getName());
+						stats = new GuildStats();
+						log.info("No previous stats found for {}", guild.getName());
 					}
 
-					statsModule.trackGuild(lGuild, lStats);
-					for(ICommand lCommand: commands) {
-						if (lCommand instanceof IStatsCommand) {
-							((IStatsCommand) lCommand).enableCommands(lGuild, lStats);
+					statsModule.trackGuild(guild, stats);
+					for(ICommand command: commands) {
+						if (command instanceof IStatsCommand) {
+							((IStatsCommand) command).enableCommands(guild, stats);
 						}
 					}
-					log.info("Member of guild: {}, tracking stats for guild", lGuild.getName());
+					log.info("Member of guild: {}, tracking stats for guild", guild.getName());
 				}
 			}
 		});
@@ -294,32 +278,32 @@ public class Bot {
 	private org.unrecoverable.lechiffre.entities.Configuration loadConfiguration(final File directory, final String configurationFileName) {
 		
 		// load in configuration
-		Reader lConfigReader = null;
-		org.unrecoverable.lechiffre.entities.Configuration lConfiguration = null;
+		Reader configReader = null;
+		org.unrecoverable.lechiffre.entities.Configuration configuration = null;
 		Yaml readerYaml = new Yaml(new Constructor(org.unrecoverable.lechiffre.entities.Configuration.class));
-		File lConfigFile = new File(directory, configurationFileName);
+		File configFile = new File(directory, configurationFileName);
 		try {
-			lConfigReader = new FileReader(lConfigFile);
-			lConfiguration = (org.unrecoverable.lechiffre.entities.Configuration) readerYaml.load(lConfigReader);
-			log.info("Loaded configuration from {}: {}", lConfigFile, lConfiguration);
+			configReader = new FileReader(configFile);
+			configuration = (org.unrecoverable.lechiffre.entities.Configuration) readerYaml.load(configReader);
+			log.info("Loaded configuration from {}: {}", configFile, configuration);
 		} catch (FileNotFoundException e1) {
-			log.error("could not load configuration from {}", lConfigFile, e1);
-			lConfiguration = new org.unrecoverable.lechiffre.entities.Configuration();
-			log.info("Using default configuration: {}", lConfiguration);
+			log.error("could not load configuration from {}", configFile, e1);
+			configuration = new org.unrecoverable.lechiffre.entities.Configuration();
+			log.info("Using default configuration: {}", configuration);
 		}
 		finally {
-			IOUtils.closeQuietly(lConfigReader);
+			IOUtils.closeQuietly(configReader);
 		}
 
-		return lConfiguration;
+		return configuration;
 	}
 	
 	private void configureMetrics(final org.unrecoverable.lechiffre.entities.Configuration configuration) {
 
 		// set up bot metrics, if configured
 		SharedMetricRegistries.add(METRIC_REGISTRY_NAME, metricRegistry);
-		MBeanServer lMBeanServer = MBeanServerFactory.createMBeanServer();
-		final JmxReporter jmxReporter = JmxReporter.forRegistry(metricRegistry).registerWith(lMBeanServer).inDomain("lechiffre").build();
+		MBeanServer mBeanServer = MBeanServerFactory.createMBeanServer();
+		final JmxReporter jmxReporter = JmxReporter.forRegistry(metricRegistry).registerWith(mBeanServer).inDomain("lechiffre").build();
 		jmxReporter.start();
 		
 		// if a graphite host is configured, setup graphite reporter
@@ -343,7 +327,7 @@ public class Bot {
 			metricRegistry.registerAll(new JvmAttributeGaugeSet());
 			metricRegistry.registerAll(new ThreadStatesGaugeSet());
 			metricRegistry.registerAll(new ClassLoadingGaugeSet());
-			metricRegistry.registerAll(new BufferPoolMetricSet(lMBeanServer));
+			metricRegistry.registerAll(new BufferPoolMetricSet(mBeanServer));
 			log.info("JVM statistics enabled");
 		}
 	}
@@ -362,22 +346,22 @@ public class Bot {
 	
 	private void startGraphiteReporter(final String metricPrefix, final String graphiteHost, final int graphitePort, final int rate, final TimeUnit rateUnit) {
 
-		String lMetricPrefix = metricPrefix;
+		String foundMetricPrefix = metricPrefix;
 		// if there was no prefix configured, use the hostname of this machine.
 		if (StringUtils.isBlank(metricPrefix)) {
 			try {
-				InetAddress lLocalHost = InetAddress.getLocalHost();
-				lMetricPrefix = lLocalHost.getHostName();
+				InetAddress localHost = InetAddress.getLocalHost();
+				foundMetricPrefix = localHost.getHostName();
 			} catch (UnknownHostException e) {
 				log.warn("cannot discover local host name; using localhost");
-				lMetricPrefix = "localhost";
+				foundMetricPrefix = "localhost";
 			}
 		}
 		
 		log.info("Reporting metrics to {}:{} with the prefix {} at {} {} rate", 
 				graphiteHost, 
 				graphitePort,
-				lMetricPrefix,
+				foundMetricPrefix,
 				rate, rateUnit.name());
 
 		final Graphite graphite = new Graphite(
@@ -385,7 +369,7 @@ public class Bot {
 						graphiteHost, 
 						graphitePort));
 		final GraphiteReporter graphiteReporter = GraphiteReporter.forRegistry(metricRegistry)
-		                                                  .prefixedWith(lMetricPrefix)
+		                                                  .prefixedWith(foundMetricPrefix)
 		                                                  .convertRatesTo(TimeUnit.SECONDS)
 		                                                  .convertDurationsTo(TimeUnit.SECONDS)
 		                                                  .filter(MetricFilter.ALL)
@@ -393,14 +377,9 @@ public class Bot {
 		graphiteReporter.start(rate, rateUnit);
 	}
 
-	public static class StatsSaveWorker implements Runnable {
+	class StatsSaveWorker implements Runnable {
 
-		private org.unrecoverable.lechiffre.entities.Configuration configuration;
 		private Thread worker;
-
-		public StatsSaveWorker(org.unrecoverable.lechiffre.entities.Configuration configuration) {
-			this.configuration = configuration;
-		}
 
 		public void start() {
 			worker = new Thread(this);
@@ -411,11 +390,9 @@ public class Bot {
 
 		@Override
 		public void run() {
-			SaveStatsCommand lSaveStatsCommand = new SaveStatsCommand();
-			lSaveStatsCommand.configure(configuration);
 			while(true) {
 				try {
-					lSaveStatsCommand.handle(null);
+					saveStatsCommand.handle(null);
 					Thread.sleep(TimeUnit.MILLISECONDS.convert(configuration.getStatsSavePeriodMinutes(), TimeUnit.MINUTES));
 				} catch (InterruptedException e) {
 					// exit

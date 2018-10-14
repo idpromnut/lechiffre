@@ -23,7 +23,7 @@ public class AdminCommand implements ICommand {
 		parser.accepts(RECONNECT, "instructs the bot to disconnect and then connect to Discord's servers");
 		parser.accepts(SHUTDOWN, "instructs the bot to save all data, diconnect and exit");
 	}
-	
+
 	@Override
 	public String getCommand() {
 		return Commands.CMD_ADMIN;

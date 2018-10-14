@@ -86,9 +86,9 @@ public class CommandModule implements IModule, IConfigurable {
 	@Override
 	public void configure(Configuration configuration) {
 		this.configuration = configuration;
-		for(ICommand lCommand: commandChain) {
-			if (lCommand instanceof IConfigurable) {
-				((IConfigurable) lCommand).configure(configuration);
+		for(ICommand command: commandChain) {
+			if (command instanceof IConfigurable) {
+				((IConfigurable) command).configure(configuration);
 			}
 		}
 	}
@@ -98,30 +98,30 @@ public class CommandModule implements IModule, IConfigurable {
 		try {
 			metricRegistry.counter(messagesProcessed).inc();
 			metricRegistry.meter(messagesProcessedRate).mark();
-			final IMessage lMessage = event.getMessage();
-			metricRegistry.meter(messagesPrcoessedDataRate).mark(lMessage.getContent().length());
-			final IUser lAuthor = lMessage.getAuthor();
-			final IDiscordClient lClient = event.getClient();
-			final IChannel lChannel = lMessage.getChannel();
-			IChannel lPrivateChannel = lClient.getOrCreatePMChannel(lAuthor);
+			final IMessage message = event.getMessage();
+			metricRegistry.meter(messagesPrcoessedDataRate).mark(message.getContent().length());
+			final IUser author = message.getAuthor();
+			final IDiscordClient client = event.getClient();
+			final IChannel channel = message.getChannel();
+			IChannel privateChannel = client.getOrCreatePMChannel(author);
 
-			Pair<BotReply, String> lReply = dispatchCommand(lMessage);
-			if (lReply != null) {
-				switch (lReply.getLeft()) {
+			Pair<BotReply, String> reply = dispatchCommand(message);
+			if (reply != null) {
+				switch (reply.getLeft()) {
 				case CHANNEL:
-					if (configuration.getChannelReplyWhitelist().contains(lChannel.getName())) {
-						lChannel.sendMessage(lReply.getRight());
-						if (lReply.getRight() != null) {
+					if (isChannelReplyAllowed(author, channel)) {
+						channel.sendMessage(reply.getRight());
+						if (reply.getRight() != null) {
 							metricRegistry.counter(messagesReply).inc();
-							metricRegistry.meter(messagesReplyDataRate).mark(lReply.getRight().length());
+							metricRegistry.meter(messagesReplyDataRate).mark(reply.getRight().length());
 						}
 						break;
 					}
 				case PM:
-					lPrivateChannel.sendMessage(lReply.getRight());
-					if (lReply.getRight() != null) {
+					privateChannel.sendMessage(reply.getRight());
+					if (reply.getRight() != null) {
 						metricRegistry.meter(messagesReply).mark();
-						metricRegistry.meter(messagesReplyDataRate).mark(lReply.getRight().length());
+						metricRegistry.meter(messagesReplyDataRate).mark(reply.getRight().length());
 					}
 					break;
 				case NONE:
@@ -136,28 +136,28 @@ public class CommandModule implements IModule, IConfigurable {
 
 	private Pair<BotReply, String> dispatchCommand(final IMessage message) {
 
-		final String lContent = message.getContent();
-		final IUser lAuthor = message.getAuthor();
-		final IGuild lGuild = message.getGuild();
-		Pair<BotReply, String> lResponse = Pair.of(BotReply.NONE, null);
+		final String content = message.getContent();
+		final IUser author = message.getAuthor();
+		final IGuild guild = message.getGuild();
+		Pair<BotReply, String> response = Pair.of(BotReply.NONE, null);
 
-		if (Commands.isCommand(lContent)) {
+		if (Commands.isCommand(content)) {
 
 			// define the "unknown command" response
-			lResponse = Pair.of(BotReply.PM,
+			response = Pair.of(BotReply.PM,
 					"I don't know what you would like me to do, may I suggest you '" + Commands.getCommandPrefix() + Commands.CMD_HELP + "' yourself.");
 
-			for (ICommand lCommand : commandChain) {
-				if (message.getContent().startsWith(Commands.getCommandPrefix() + lCommand.getCommand())) {
+			for (ICommand command : commandChain) {
+				if (message.getContent().startsWith(Commands.getCommandPrefix() + command.getCommand())) {
 
 					// check if this command requires a permissions check (the guild is available)
-					if (lCommand.isGuildCommand() ) {
-						lResponse = executeGuildCommand(lCommand, message, lGuild, lAuthor);
+					if (command.isGuildCommand() ) {
+						response = executeGuildCommand(command, message, guild, author);
 					}
 					else {
 						// otherwise this command doesn't require a guild reference to execute
 						// TODO need to add a set of permissions checking based on user ID or something
-						lResponse = lCommand.handle(message);
+						response = command.handle(message);
 					}
 					metricRegistry.counter(commandsProcessed).inc();
 					metricRegistry.meter(commandsProcessedRate).mark();
@@ -166,12 +166,12 @@ public class CommandModule implements IModule, IConfigurable {
 			}
 		}
 
-		return lResponse;
+		return response;
 	}
 
 	private Pair<BotReply, String> executeGuildCommand(final ICommand command, final IMessage message, final IGuild guild, final IUser author) {
 
-		Pair<BotReply, String> lResponse;
+		Pair<BotReply, String> response;
 
 		if (guild == null) {
 			return Pair.of(BotReply.PM, command.getCommand() + " must be requested from a channel (not via PM!)");
@@ -179,12 +179,17 @@ public class CommandModule implements IModule, IConfigurable {
 
 		// check if the user that send the command can execute it using the guild permissions it was sent from
 		if (configuration.userHasPermission(author, guild, command)) {
-			lResponse = command.handle(message);
+			response = command.handle(message);
 		}
 		else {
-			lResponse = Pair.of(BotReply.PM, "I'm sorry, but I can't let you run the " + Commands.getCommandPrefix() + command.getCommand() + " command");
+			response = Pair.of(BotReply.PM, "I'm sorry, but I can't let you run the " + Commands.getCommandPrefix() + command.getCommand() + " command");
 		}
 
-		return lResponse;
+		return response;
+	}
+	
+	private boolean isChannelReplyAllowed(final IUser author, final IChannel channel) {
+		return configuration.getChannelReplyWhitelist() == null || (configuration.getChannelReplyWhitelist().isEmpty() || 
+				configuration.getChannelReplyWhitelist().contains(channel.getName()));
 	}
 }

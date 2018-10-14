@@ -42,3 +42,8 @@ If there there are multiple top (most active) hours with the same value (i.e.  3
 A channel's activity is updated only when a message is posted that channel. The only activity that is currently tracked is a moving histogram of the number of
 messages that have been posted to the channel over the last 24 hours.
 
+
+### Requested Features
+
+- Add ability to configure commands to work in only specific channels
+- Add in roll dice + the ability to respond with the dice images

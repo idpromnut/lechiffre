@@ -161,7 +161,7 @@ public class StatsModule implements IModule {
 	public void handlePresenceUpdatedEvent(PresenceUpdateEvent event) {
 		final IUser lUser = event.getUser();
 		if (event != null && event.getNewPresence() != null && 
-				(event.getNewPresence().getStatus() == StatusType.ONLINE || event.getNewPresence().getStatus() == StatusType.STREAMING)) {
+				(event.getNewPresence().getStatus() == StatusType.ONLINE)) {
 			updateUserStatsForAllTrackedGuilds(lUser);
 		}
 	}

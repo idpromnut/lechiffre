@@ -47,6 +47,8 @@ public class Configuration {
 	@NonNull
 	private Map<String, List<String>> roleToCommandPermissions = new HashMap<>();
 
+	private boolean greetingEnabled = true;
+	
 	private String dataDirectoryPath;
 
 	private int statsSavePeriodMinutes = 10;

@@ -33,6 +33,9 @@ public final class Commands {
 	
 	public static final String CMD_ADMIN = "admin";
 
+	public static final String CMD_ROLL = "roll";
+	
+	public static final String CMD_TAUNT = "taunt";
 
 	public static boolean isCommand(String input) {
 		return (input != null && input.startsWith(getCommandPrefix()));

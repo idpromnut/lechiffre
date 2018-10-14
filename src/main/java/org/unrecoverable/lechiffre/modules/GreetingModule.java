@@ -1,10 +1,12 @@
 package org.unrecoverable.lechiffre.modules;
 
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-import lombok.Getter;
+import org.unrecoverable.lechiffre.commands.TauntCommand;
+import org.unrecoverable.lechiffre.entities.Configuration;
+import org.unrecoverable.lechiffre.entities.IConfigurable;
+
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import sx.blah.discord.api.IDiscordClient;
@@ -19,16 +21,15 @@ import sx.blah.discord.util.MissingPermissionsException;
 import sx.blah.discord.util.RateLimitException;
 
 @Slf4j
-public class GreetingModule implements IModule {
+public class GreetingModule implements IModule, IConfigurable {
 
-	@Getter @Setter
-	private List<String> newUserGreetMessages = new ArrayList<>();
+	@Setter
+	private TauntCommand tauntCommand;
+	
+	private Configuration configuration;
 	
 	private List<IUser> greetedUsers = new LinkedList<>();
 	
-	public GreetingModule() {
-	}
-
 	@Override
 	public boolean enable(IDiscordClient client) {
 		return true;
@@ -64,24 +65,19 @@ public class GreetingModule implements IModule {
 		IChannel lChannel = lMessage.getChannel();
 		IUser lAuthor = lMessage.getAuthor();
 		
-		if (!lChannel.isPrivate() && !greetedUsers.contains(lAuthor)) {
+		if (configuration.isGreetingEnabled() && !lChannel.isPrivate() && !greetedUsers.contains(lAuthor) && tauntCommand != null) {
 			greetedUsers.add(lAuthor);
 			try {
-				String lGreet = pickRandomGreeting();
-				if (lGreet.indexOf("%s") >= 0) {
-					lGreet = lGreet.replaceAll("%s", lAuthor.mention());
-				}
-				else {
-					lGreet = lAuthor.mention() + " " + lGreet;
-				}
-				lChannel.sendMessage(lGreet);
+				lChannel.sendMessage(tauntCommand.taunt(lAuthor));
 			} catch (MissingPermissionsException | RateLimitException | DiscordException e) {
 				log.warn("could not send greeting for {}", lAuthor.getName());
 			}
 		}
 	}
-	
-	private String pickRandomGreeting() {
-		return newUserGreetMessages.get((int)(newUserGreetMessages.size() * Math.random()));
+
+	@Override
+	public void configure(Configuration configuration) {
+		this.configuration = configuration;
 	}
+	
 }
